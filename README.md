@@ -3,7 +3,7 @@
 Clasificador de solicitudes de soporte con **dos motores** que cumplen el mismo contrato de respuesta:
 
 - **`traditional`** — IA simbólica: reglas ponderadas, sin modelos generativos.
-- **`generative`** — LLM real (Ollama local, Anthropic u OpenAI-compatible) con salida JSON validada.
+- **`generative`** — LLM real (Gemini, Ollama local, Anthropic u OpenAI-compatible) con salida JSON validada.
 
 Node.js ≥ 22, **cero dependencias** (usa `fetch`, `node:http` y `node:test` nativos). Reparto de trabajo del equipo: [`docs/REPARTO.md`](docs/REPARTO.md).
 
@@ -30,7 +30,8 @@ npm start                # http://127.0.0.1:3000
 
 | Opción | Pasos |
 |---|---|
-| **Ollama (local, gratis)** | Instale [Ollama](https://ollama.com), `ollama pull llama3.2`, deje `LLM_PROVIDER=ollama` |
+| **Gemini (usado por el equipo)** | `LLM_PROVIDER=gemini` + `GEMINI_API_KEY=...` (opcional `LLM_MODEL`, por defecto `gemini-3.8-flash`). API REST nativa con `responseSchema`; la llave va en cabecera, nunca en la URL |
+| Ollama (local, gratis) | Instale [Ollama](https://ollama.com), `ollama pull llama3.2`, deje `LLM_PROVIDER=ollama` |
 | Anthropic | `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY=...` |
 | OpenAI / compatible | `LLM_PROVIDER=openai` + `OPENAI_API_KEY=...` (+ `OPENAI_BASE_URL`) |
 
@@ -42,6 +43,13 @@ Las llaves solo viven en `.env` (ignorado por git). Nunca se registran ni aparec
 curl -X POST http://127.0.0.1:3000/api/analyze \
   -H 'content-type: application/json' \
   -d '{"message":"No puedo iniciar sesión","mode":"generative"}'
+```
+
+En Windows PowerShell 5.1 envíe el cuerpo como bytes UTF-8; si no, los acentos llegan corruptos ("sesi?n") y la clasificación cambia:
+
+```powershell
+$json = '{"message":"No puedo iniciar sesión","mode":"generative"}'
+Invoke-RestMethod -Method Post http://127.0.0.1:3000/api/analyze -ContentType 'application/json; charset=utf-8' -Body ([Text.Encoding]::UTF8.GetBytes($json))
 ```
 
 ```json
