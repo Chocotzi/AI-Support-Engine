@@ -10,6 +10,9 @@ import { GenerativeFormatError } from './generative.js';
 
 export const MAX_BODY_BYTES = 10 * 1024;
 export const MAX_MESSAGE_LEN = 2000;
+// Tras un 413 se descarta el resto del cuerpo para que el cliente reciba la respuesta;
+// si aun así sigue enviando más de esto, se corta la conexión (no se drenan cuerpos gigantes).
+const HARD_LIMIT_BYTES = 64 * MAX_BODY_BYTES;
 
 class HttpError extends Error {
   constructor(status, code, message) {
@@ -26,6 +29,8 @@ function send(res, status, body) {
     'content-length': Buffer.byteLength(payload),
     'x-content-type-options': 'nosniff',
     'cache-control': 'no-store',
+    // Tras un cuerpo demasiado grande no se reutiliza la conexión.
+    ...(status === 413 ? { connection: 'close' } : {}),
   });
   res.end(payload);
 }
@@ -34,11 +39,18 @@ function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
+    let tooLarge = false;
     req.on('data', (chunk) => {
       size += chunk.length;
+      if (tooLarge) {
+        if (size > HARD_LIMIT_BYTES) req.destroy();
+        return; // se descarta: no se acumula en memoria
+      }
       if (size > MAX_BODY_BYTES) {
+        // No se destruye la conexión aquí: si se hiciera, el cliente nunca recibiría el 413.
+        tooLarge = true;
+        chunks.length = 0;
         reject(new HttpError(413, 'PAYLOAD_TOO_LARGE', `El cuerpo excede ${MAX_BODY_BYTES} bytes`));
-        req.destroy();
         return;
       }
       chunks.push(chunk);
@@ -73,6 +85,7 @@ function toHttpError(err) {
   if (err instanceof ProviderError) {
     if (err.code === 'PROVIDER_NOT_CONFIGURED') return new HttpError(503, err.code, 'El motor generativo no está configurado');
     if (err.code === 'PROVIDER_TIMEOUT') return new HttpError(504, err.code, 'El proveedor de IA no respondió a tiempo');
+    if (err.code === 'PROVIDER_BLOCKED') return new HttpError(502, err.code, 'El proveedor de IA rechazó procesar la solicitud');
     return new HttpError(502, err.code, 'El proveedor de IA no está disponible');
   }
   if (err instanceof GenerativeFormatError) {
