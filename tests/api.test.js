@@ -48,7 +48,10 @@ test('400 por entradas inválidas', async () => {
 });
 
 test('413, 415, 404 y 405', async () => {
-  assert.equal((await post({ message: 'x'.repeat(20000), mode: 'traditional' }).catch(() => ({ status: 413 }))).status, 413);
+  // Sin .catch: el cliente debe RECIBIR el 413, no un corte de conexión.
+  const big = await post({ message: 'x'.repeat(20000), mode: 'traditional' });
+  assert.equal(big.status, 413);
+  assert.equal((await big.json()).error.code, 'PAYLOAD_TOO_LARGE');
   assert.equal((await post('x', { 'content-type': 'text/plain' })).status, 415);
   assert.equal((await fetch(`${base}/otra`)).status, 404);
   assert.equal((await fetch(`${base}/api/analyze`)).status, 405);
@@ -59,6 +62,7 @@ test('errores del proveedor -> códigos seguros sin detalles internos', async ()
     [new ProviderError('PROVIDER_TIMEOUT', 'secreto-interno'), 504],
     [new ProviderError('PROVIDER_NOT_CONFIGURED', 'secreto-interno'), 503],
     [new ProviderError('PROVIDER_HTTP', 'secreto-interno', 500), 502],
+    [new ProviderError('PROVIDER_BLOCKED', 'secreto-interno'), 502],
     [new GenerativeFormatError('secreto-interno'), 502],
     [new Error('boom secreto-interno'), 500],
   ];

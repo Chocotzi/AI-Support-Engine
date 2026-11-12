@@ -11,6 +11,17 @@ test('redactSecrets oculta llaves, tokens y contraseñas', () => {
   assert.match(out, /\[REDACTED\]/);
 });
 
+test('redactSecrets oculta llaves de Google / Gemini, incluso si terminan en "-"', () => {
+  // Se arman en tiempo de ejecución para que ningún escáner de secretos las confunda con llaves reales.
+  const normal = 'AIza' + 'Sy0aB1cD2eF3gH4iJ5kL6mN7oP8qR9sT0u';
+  const guion = 'AIza' + 'x'.repeat(34) + '-';
+  const nueva = 'AQ.' + 'Ab3-x.Y9_'.repeat(6); // formato nuevo de Google
+  assert.equal(redactSecrets(`mi llave es ${normal}, ayuda`), 'mi llave es [REDACTED], ayuda');
+  assert.equal(redactSecrets(`otra: ${guion} fin`), 'otra: [REDACTED] fin');
+  assert.equal(redactSecrets(`la nueva ${nueva} fin`), 'la nueva [REDACTED] fin');
+  assert.equal(redactSecrets('Respuesta: AQ. es una sigla'), 'Respuesta: AQ. es una sigla');
+});
+
 test('redactSecrets no altera texto normal', () => {
   assert.equal(redactSecrets('No puedo iniciar sesión'), 'No puedo iniciar sesión');
 });

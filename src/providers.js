@@ -1,11 +1,13 @@
 // PARTE B — Conexión con el proveedor de IA generativa (local o API).
-// Soporta: ollama (local, sin costo), anthropic, openai (y cualquier API compatible con OpenAI).
+// Soporta: gemini (API REST nativa de Google), ollama (local, sin costo), anthropic,
+// openai (y cualquier API compatible con OpenAI).
 //
 // Configuración SOLO por variables de entorno (ver .env.example). Las llaves nunca se
 // escriben en el código, nunca se registran y nunca se incluyen en mensajes de error.
 
 export class ProviderError extends Error {
-  // code: PROVIDER_NOT_CONFIGURED | PROVIDER_TIMEOUT | PROVIDER_NETWORK | PROVIDER_HTTP | PROVIDER_BAD_BODY
+  // code: PROVIDER_NOT_CONFIGURED | PROVIDER_TIMEOUT | PROVIDER_NETWORK | PROVIDER_HTTP
+  //     | PROVIDER_BAD_BODY | PROVIDER_BLOCKED
   constructor(code, message, status) {
     super(message);
     this.name = 'ProviderError';
@@ -20,6 +22,7 @@ export function getConfig(env = process.env) {
     ollama: 'llama3.2',
     anthropic: 'claude-haiku-5-5',
     openai: 'gpt-4o-mini',
+    gemini: 'gemini-3.8-flash',
   };
   return {
     provider,
@@ -29,6 +32,8 @@ export function getConfig(env = process.env) {
     anthropicKey: env.ANTHROPIC_API_KEY,
     openaiKey: env.OPENAI_API_KEY,
     openaiBaseUrl: (env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/$/, ''),
+    geminiKey: env.GEMINI_API_KEY,
+    geminiBaseUrl: (env.GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/$/, ''),
   };
 }
 
@@ -36,6 +41,7 @@ export function isConfigured(config = getConfig()) {
   if (config.provider === 'ollama') return true; // se comprobará al llamar
   if (config.provider === 'anthropic') return Boolean(config.anthropicKey);
   if (config.provider === 'openai') return Boolean(config.openaiKey);
+  if (config.provider === 'gemini') return Boolean(config.geminiKey);
   return false;
 }
 
@@ -66,7 +72,9 @@ async function post(url, headers, body, timeoutMs) {
 }
 
 // Devuelve el TEXTO crudo generado por el modelo.
-export async function callModel({ system, user }, config = getConfig()) {
+// `schema` (opcional) es el esquema de salida esperado; los proveedores que lo soportan
+// (Gemini) restringen la generación con él. Aun así, generative.js valida la salida siempre.
+export async function callModel({ system, user, schema }, config = getConfig()) {
   if (!isConfigured(config)) {
     throw new ProviderError(
       'PROVIDER_NOT_CONFIGURED',
@@ -124,6 +132,30 @@ export async function callModel({ system, user }, config = getConfig()) {
         config.timeoutMs,
       );
       return data?.choices?.[0]?.message?.content ?? '';
+    }
+    case 'gemini': {
+      // API REST nativa (generateContent). La llave va en la cabecera x-goog-api-key y NO en la
+      // URL (?key=...), para que no quede en logs de proxies ni en trazas de error.
+      // No se envía `temperature`: Gemini 3.6+ la ignora; la consistencia la da el esquema.
+      const generationConfig = { responseMimeType: 'application/json' };
+      if (schema) generationConfig.responseSchema = schema;
+      const data = await post(
+        `${config.geminiBaseUrl}/models/${encodeURIComponent(config.model)}:generateContent`,
+        { 'x-goog-api-key': config.geminiKey },
+        {
+          systemInstruction: { parts: [{ text: system }] },
+          contents: [{ role: 'user', parts: [{ text: user }] }],
+          generationConfig,
+        },
+        config.timeoutMs,
+      );
+      if (data?.promptFeedback?.blockReason) {
+        // Reintentar un bloqueo de seguridad no sirve: se reporta sin reenviar el detalle.
+        throw new ProviderError('PROVIDER_BLOCKED', 'El proveedor de IA rechazó procesar la solicitud');
+      }
+      // Los modelos con "thinking" pueden devolver partes de razonamiento (thought: true): se descartan.
+      const parts = data?.candidates?.[0]?.content?.parts ?? [];
+      return parts.filter((p) => !p.thought && typeof p.text === 'string').map((p) => p.text).join('');
     }
     default:
       throw new ProviderError('PROVIDER_NOT_CONFIGURED', `Proveedor desconocido: ${config.provider}`);
