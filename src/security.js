@@ -14,6 +14,8 @@ export function normalize(text) {
 // Se aplica ANTES de enviar texto a un proveedor externo y antes de registrar nada.
 const SECRET_PATTERNS = [
   /\bsk-[A-Za-z0-9_-]{16,}\b/g, // llaves tipo OpenAI / Anthropic
+  /\bAIza[0-9A-Za-z_-]{30,}/g, // llaves de Google / Gemini (sin \b final: pueden terminar en "-")
+  /\bAQ\.[0-9A-Za-z._-]{30,}/g, // llaves de Google / Gemini con formato nuevo ("AQ.…")
   /\bAKIA[0-9A-Z]{16}\b/g, // AWS access key id
   /\bgh[pousr]_[A-Za-z0-9]{20,}\b/g, // tokens de GitHub
   /\bBearer\s+[A-Za-z0-9._~+/=-]{10,}/gi, // cabeceras Authorization
