@@ -80,20 +80,22 @@ npm run eval                                # ambos motores, llamada directa
 node eval/run-eval.js --api http://127.0.0.1:3000   # igual, pero pasando por el endpoint
 ```
 
-- Dataset y **clasificación de referencia**: [`eval/dataset.json`](eval/dataset.json) (14 casos: normales, ambiguos y 2 adversariales).
+- Dataset y **clasificación de referencia**: [`eval/dataset.json`](eval/dataset.json) (20 casos: normales, ambiguos y 3 adversariales). Los casos 15–20 se agregaron con su referencia fijada **antes** de ejecutar y sin ajustar las reglas después.
 - Un caso es correcto si **categoría y prioridad** coinciden con la referencia.
 - Salidas: `results/results.md` (tabla) y `results/results.json`.
 - Si el proveedor generativo no está configurado, el script **omite** ese motor y lo avisa; nunca rellena resultados.
 
-> ⚠️ El tradicional sale 14/14 en este dataset porque las reglas se escribieron viendo esos casos. Para una comparación honesta, agreguen casos nuevos al dataset antes de ejecutar (`tests/traditional.test.js` ya prueba mensajes que no están en él).
+> ⚠️ Las reglas del tradicional se escribieron viendo los casos 1–14 (los acierta todos). Los casos 15–20 son nuevos para el motor y muestran su rendimiento real fuera de lo que ya conocía.
 
 ## Resultados y conclusión
 
-> **Pendiente del equipo:** ejecutar `npm run eval` con el modelo real, pegar aquí la tabla de `results/results.md` y escribir la conclusión (≤150 palabras) con los números obtenidos.
+Detalle por caso: [`results/results.md`](results/results.md). Evidencia del endpoint: [`results/evidencia-endpoint.md`](results/evidencia-endpoint.md).
 
-| Motor | Correctos | Precisión | Formato válido |
+| Motor | Correctos | Precisión (cat+prio) | Formato válido |
 |---|---|---|---|
-| traditional | _completar_ | _completar_ | _completar_ |
-| generative | _completar_ | _completar_ | _completar_ |
+| traditional | 17/20 | 85% (casos nuevos 15–20: 3/6) | 100% |
+| generative | _pendiente: falta configurar el proveedor y ejecutar `npm run eval`_ | | |
+
+Fallos del tradicional, todos en casos nuevos: #16 "cuenta bloqueada" → BUG (no reconoce "bloqueada" como acceso); #18 excompañero con acceso → BUG (no detecta el riesgo sin palabras como "vulnerabilidad"); #20 adversarial "solo una sugerencia" → FEATURE (la frase engañosa le gana a "tokens de sesión visibles").
 
 **Conclusión técnica:** _completar_
