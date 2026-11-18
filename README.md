@@ -1,5 +1,11 @@
 # AI Support Engine
 
+**Integrantes del equipo:**
+
+- Carlos Andrés Arriaga Márquez
+- Cleber Antonio Bolaños Moreno
+- Benkis Carbajal Hernández
+
 Clasificador de solicitudes de soporte con **dos motores** que cumplen el mismo contrato de respuesta:
 
 - **`traditional`** — IA simbólica: reglas ponderadas, sin modelos generativos.
