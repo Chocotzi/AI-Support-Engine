@@ -9,7 +9,7 @@
 
 export const CATEGORIES = ['ACCESS', 'BUG', 'FEATURE', 'SECURITY'];
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-export const MODES = ['traditional', 'generative'];
+export const MODES = ['traditional', 'generative', 'ml'];
 export const MAX_RESPONSE_LEN = 1200;
 
 export class ContractError extends Error {

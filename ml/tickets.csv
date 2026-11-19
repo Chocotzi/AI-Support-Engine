@@ -1,0 +1,201 @@
+message,category
+"No puedo entrar a mi cuenta, dice que el usuario no existe",ACCESS
+"Olvidé mi contraseña y el enlace de recuperación no me llega",ACCESS
+"El código de verificación por SMS nunca llega a mi celular",ACCESS
+"Me sale acceso denegado al abrir el módulo de facturación",ACCESS
+"Después de cambiar de celular perdí el autenticador y no puedo iniciar sesión",ACCESS
+"Mi usuario fue bloqueado por demasiados intentos fallidos",ACCESS
+"No tengo permisos para ver los reportes de mi equipo",ACCESS
+"El inicio de sesión con Google me devuelve a la pantalla de login",ACCESS
+"Necesito que me restablezcan la contraseña, no recuerdo la actual",ACCESS
+"Me pide la contraseña cada cinco minutos y me saca de la sesión",ACCESS
+"La sesión expira apenas inicio y vuelve a pedir credenciales",ACCESS
+"No me reconoce la contraseña nueva que configuré ayer",ACCESS
+"Soy nuevo en la empresa y todavía no tengo usuario para entrar",ACCESS
+"Cambié de correo y ya no puedo acceder con el anterior",ACCESS
+"El enlace de activación de mi cuenta dice que ya expiró",ACCESS
+"I can't log in, it says my password is wrong",ACCESS
+"I forgot my password and the reset email never arrives",ACCESS
+"My account is locked and I need access today",ACCESS
+"El doble factor me pide un código pero no tengo el token",ACCESS
+"No puedo ingresar al portal desde la VPN de la oficina",ACCESS
+"Mi jefe me agregó al proyecto pero me dice que no tengo acceso",ACCESS
+"Al intentar entrar me aparece usuario o contraseña incorrectos",ACCESS
+"Quiero recuperar el acceso a mi cuenta que estaba inactiva",ACCESS
+"Me desactivaron la cuenta por error y necesito volver a entrar",ACCESS
+"No puedo acceder al panel de reportes, dice permiso insuficiente",ACCESS
+"El correo para verificar mi identidad llega vacío",ACCESS
+"Ningún usuario de la sucursal norte puede iniciar sesión hoy",ACCESS
+"Me pide cambiar la contraseña pero no acepta ninguna nueva",ACCESS
+"No tengo acceso a la carpeta compartida del área de finanzas",ACCESS
+"Necesito permisos de edición en el tablero de ventas",ACCESS
+"Mi token de acceso a la aplicación móvil fue revocado y no puedo entrar",ACCESS
+"Al ingresar con mi huella digital dice que no está registrada",ACCESS
+"Perdí el acceso después de que expiró mi contraseña",ACCESS
+"No me deja iniciar sesión en la app del celular, en la web sí",ACCESS
+"Pido que habiliten mi usuario para el sistema de inventario",ACCESS
+"Me cambiaron de área y perdí acceso a mis documentos",ACCESS
+"El sistema me dice que mi cuenta está suspendida",ACCESS
+"Necesito recuperar mi usuario, no recuerdo con qué correo me registré",ACCESS
+"Cannot sign in with single sign-on, it loops back to the login page",ACCESS
+"Requesting access to the reports module for my new role",ACCESS
+"No puedo entrar al correo corporativo desde mi casa",ACCESS
+"El código de verificación que llega no es aceptado",ACCESS
+"Mi contraseña caducó y el sistema no me deja crear otra",ACCESS
+"Necesito que me den de alta en la plataforma de capacitación",ACCESS
+"No logro autenticarme en el sistema de nómina",ACCESS
+"El restablecimiento de contraseña me dice que el enlace es inválido",ACCESS
+"Tengo la cuenta bloqueada desde ayer y no puedo trabajar",ACCESS
+"Al iniciar sesión me dice que mi rol no tiene acceso a esta sección",ACCESS
+"No recuerdo mi pregunta de seguridad para recuperar la cuenta",ACCESS
+"Necesito acceso de lectura a la base de reportes del trimestre",ACCESS
+"Al guardar un pedido la pantalla se queda en blanco",BUG
+"El reporte de ventas muestra totales duplicados",BUG
+"La aplicación se cierra sola al abrir el calendario",BUG
+"El botón de enviar no responde en el formulario de contacto",BUG
+"Las fechas aparecen en formato incorrecto en las facturas",BUG
+"La búsqueda no devuelve resultados aunque el producto existe",BUG
+"Me sale error 404 al abrir el detalle de un cliente",BUG
+"La carga de archivos falla con archivos mayores a 5 MB",BUG
+"El sistema está muy lento desde la última actualización",BUG
+"Los gráficos del tablero no se actualizan con los datos nuevos",BUG
+"Al exportar a CSV los acentos salen como símbolos raros",BUG
+"La app móvil se congela al tomar una foto",BUG
+"Los correos de notificación llegan duplicados",BUG
+"El cálculo de impuestos da un valor incorrecto en algunas facturas",BUG
+"The page crashes when I upload an image",BUG
+"The search bar returns an error when I type special characters",BUG
+"Sync between mobile and web is not working",BUG
+"El carrito de compras se vacía solo al cambiar de página",BUG
+"El filtro por fecha ignora el día final del rango",BUG
+"La impresión del recibo sale cortada",BUG
+"El servidor responde con error 503 de forma intermitente",BUG
+"Las notificaciones push dejaron de llegar",BUG
+"Al editar un cliente se borra su número de teléfono",BUG
+"El menú lateral no se despliega en Safari",BUG
+"La paginación repite los mismos registros en la página dos",BUG
+"Cuando cambio el idioma la página muestra textos mezclados",BUG
+"La aplicación muestra un error inesperado al iniciar el pago",BUG
+"Los PDF generados salen en blanco",BUG
+"El contador de inventario muestra números negativos",BUG
+"Al arrastrar archivos al formulario no pasa nada",BUG
+"La hora de las citas aparece con una hora de diferencia",BUG
+"El autocompletado de direcciones dejó de funcionar",BUG
+"La tabla de clientes no ordena correctamente por nombre",BUG
+"Se duplican los pedidos cuando presiono dos veces el botón",BUG
+"El video tutorial no carga y muestra un círculo girando",BUG
+"Los descuentos no se aplican en el total final",BUG
+"La aplicación consume mucha memoria y termina cerrándose",BUG
+"El correo de confirmación llega sin el número de pedido",BUG
+"Cuando subo un Excel el sistema lanza una excepción",BUG
+"El mapa de entregas no muestra las ubicaciones",BUG
+"La integración con el banco devuelve un timeout",BUG
+"Se pierden los cambios del formulario al recargar la página",BUG
+"La factura electrónica se rechaza por un campo vacío",BUG
+"El scroll se traba en la lista de productos",BUG
+"Al cerrar sesión y volver a entrar se pierde la configuración del tablero",BUG
+"La API devuelve datos incorrectos en el endpoint de pedidos",BUG
+"La plataforma se cayó por completo y nadie puede facturar",BUG
+"El botón de descargar reporte lanza un error de servidor",BUG
+"El chat de soporte se desconecta cada minuto",BUG
+"Las imágenes de los productos no cargan en la tienda",BUG
+"Me gustaría poder exportar los reportes a PowerPoint",FEATURE
+"Sería útil tener notificaciones por WhatsApp",FEATURE
+"Podrían agregar un filtro por región en el tablero",FEATURE
+"Queremos poder asignar tareas a varios usuarios a la vez",FEATURE
+"Sugiero añadir un atajo de teclado para guardar",FEATURE
+"Necesitamos una integración con Slack para recibir alertas",FEATURE
+"Sería bueno poder personalizar los colores de la interfaz",FEATURE
+"Me gustaría que la app tuviera versión para tablet",FEATURE
+"Propongo agregar plantillas para los correos a clientes",FEATURE
+"Quisiéramos poder programar reportes automáticos mensuales",FEATURE
+"Would be nice to have a calendar view for tasks",FEATURE
+"Please add support for exporting data to JSON",FEATURE
+"Feature request: allow bulk editing of products",FEATURE
+"Podrían incluir un modo sin conexión para la app móvil",FEATURE
+"Sería genial poder comentar directamente en los documentos",FEATURE
+"Queremos un panel con indicadores de desempeño por vendedor",FEATURE
+"Me gustaría poder duplicar un pedido anterior con un clic",FEATURE
+"Agregar soporte para varios idiomas en las facturas",FEATURE
+"Sería útil tener un historial de cambios en cada registro",FEATURE
+"Podrían añadir la opción de firmar documentos electrónicamente",FEATURE
+"Nos gustaría integrar el sistema con nuestro ERP",FEATURE
+"Propuesta: permitir subir fotos de perfil",FEATURE
+"Quiero poder etiquetar a compañeros en los comentarios",FEATURE
+"Sería conveniente tener un buscador global en toda la aplicación",FEATURE
+"Me gustaría recibir un resumen semanal por correo",FEATURE
+"Necesitamos poder importar clientes desde un archivo Excel",FEATURE
+"Sugerencia: mostrar el stock disponible en la pantalla de venta",FEATURE
+"Podrían agregar gráficas comparativas entre meses",FEATURE
+"Sería bueno tener un tutorial interactivo para nuevos usuarios",FEATURE
+"Queremos que la app permita pagos con código QR",FEATURE
+"Me gustaría poder arrastrar y ordenar las columnas del tablero",FEATURE
+"Agreguen la opción de archivar proyectos terminados",FEATURE
+"Sería útil un recordatorio automático de facturas vencidas",FEATURE
+"Podrían habilitar la descarga de reportes en Excel con fórmulas",FEATURE
+"Nos gustaría tener una API pública para consultar pedidos",FEATURE
+"Propongo que el sistema sugiera productos relacionados",FEATURE
+"Me encantaría un widget para la pantalla de inicio del celular",FEATURE
+"Necesitamos un reporte de horas trabajadas por proyecto para la auditoría",FEATURE
+"Sería bueno poder fijar los clientes favoritos al inicio",FEATURE
+"Podrían agregar la opción de dividir un pago en cuotas",FEATURE
+"Quisiéramos un chat interno entre los equipos",FEATURE
+"Sería práctico tener la opción de deshacer al borrar un registro",FEATURE
+"Me gustaría ver la vista previa de los archivos sin descargarlos",FEATURE
+"Pedimos agregar un campo personalizado en la ficha del cliente",FEATURE
+"Would love a keyboard shortcut to switch between projects",FEATURE
+"Could you add a way to share dashboards with other teams",FEATURE
+"Sería bueno que el sistema calcule automáticamente las comisiones",FEATURE
+"Nos ayudaría mucho un tablero de metas trimestrales",FEATURE
+"Me gustaría poder elegir qué página se abre después de entrar",FEATURE
+"Agreguen la opción de imprimir etiquetas de envío desde el pedido",FEATURE
+"Recibí un mensaje que se hace pasar por el banco pidiendo mis datos",SECURITY
+"Encontré que la API expone datos de otros clientes sin autenticación",SECURITY
+"Creo que mi computadora tiene un virus que roba contraseñas",SECURITY
+"Alguien cambió la contraseña de mi cuenta sin mi permiso",SECURITY
+"Vi un archivo con contraseñas de clientes publicado en un repositorio público",SECURITY
+"Hay intentos de inicio de sesión desde otro país en mi cuenta",SECURITY
+"El sitio permite subir archivos ejecutables sin ninguna validación",SECURITY
+"Detectamos un ataque de fuerza bruta contra el login",SECURITY
+"Un correo con un adjunto extraño infectó varios equipos",SECURITY
+"Las contraseñas se guardan en texto plano en la base de datos",SECURITY
+"Encontré un fallo XSS en el campo de comentarios",SECURITY
+"La llave de la API quedó expuesta en el código del sitio web",SECURITY
+"Alguien está usando mi cuenta para enviar correos a mis clientes",SECURITY
+"Se filtraron datos personales de empleados en internet",SECURITY
+"Nuestros servidores fueron cifrados por un ransomware",SECURITY
+"Un proveedor externo tiene acceso a datos que no debería ver",SECURITY
+"Recibí una llamada de alguien que se hacía pasar por soporte pidiendo mi código",SECURITY
+"El certificado del sitio expiró y el navegador lo marca como inseguro",SECURITY
+"I received a phishing email asking for my login credentials",SECURITY
+"There is a SQL injection in the login form",SECURITY
+"Someone accessed our database without authorization",SECURITY
+"Our customer data was leaked online",SECURITY
+"Hay un enlace que permite ver facturas de otros clientes cambiando el número en la URL",SECURITY
+"Un contratista que terminó su contrato todavía conserva credenciales activas",SECURITY
+"Detectamos tráfico sospechoso saliendo de un servidor hacia una IP desconocida",SECURITY
+"Mi antivirus detectó malware en el equipo de contabilidad",SECURITY
+"Alguien publicó capturas de pantalla con datos confidenciales del sistema",SECURITY
+"Las sesiones no expiran y cualquiera puede reutilizar un token antiguo",SECURITY
+"El formulario de registro no tiene protección contra bots y están creando cuentas falsas",SECURITY
+"Encontré una puerta trasera en un plugin instalado en el servidor",SECURITY
+"Me llegó un SMS con un enlace para verificar mi cuenta y lo abrí",SECURITY
+"El sistema muestra la contraseña del usuario en el correo de bienvenida",SECURITY
+"Descubrimos que un script descarga la base de clientes cada noche sin autorización",SECURITY
+"Las copias de seguridad están en un bucket público",SECURITY
+"Se registraron transferencias que nadie de la empresa autorizó",SECURITY
+"Un atacante modificó la página principal del sitio",SECURITY
+"Los logs guardan los números de tarjeta completos",SECURITY
+"Hay usuarios con permisos de administrador que no deberían tenerlos",SECURITY
+"Encontré credenciales de la base de datos en un archivo de configuración público",SECURITY
+"Robaron la laptop de un gerente con información sin cifrar",SECURITY
+"Alguien intentó suplantar a nuestro director por correo para pedir un pago",SECURITY
+"La aplicación acepta cualquier contraseña para el usuario admin",SECURITY
+"Possible data breach: an unknown user downloaded all customer records",SECURITY
+"We found malware on one of our production servers",SECURITY
+"Un compañero me pidió mi contraseña por chat diciendo que era de sistemas",SECURITY
+"El sitio no cifra los datos al enviarlos, funciona solo con http",SECURITY
+"Hay un keylogger instalado en la computadora de recepción",SECURITY
+"Detectamos accesos no autorizados al correo del área de finanzas",SECURITY
+"Una extensión del navegador está enviando nuestros datos a un servidor externo",SECURITY
+"Se puede ver información privada de otros usuarios cambiando el ID en la API",SECURITY

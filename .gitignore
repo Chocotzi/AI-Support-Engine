@@ -3,3 +3,7 @@ node_modules/
 .env.*
 !.env.example
 *.log
+
+# Motor ML (Python)
+ml/feedback.csv
+__pycache__/

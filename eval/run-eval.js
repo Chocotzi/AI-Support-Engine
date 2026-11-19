@@ -1,8 +1,9 @@
-// PARTE A — Evaluación comparativa de ambos motores.
+// PARTE A — Evaluación comparativa de los motores (traditional, generative, ml).
 //
 // Uso:
-//   node eval/run-eval.js                              # ambos motores
+//   node eval/run-eval.js                              # los tres motores
 //   node eval/run-eval.js --engines traditional        # solo uno
+//   node eval/run-eval.js --engines traditional,ml --out results-ml   # otro archivo de salida
 //   node eval/run-eval.js --api http://127.0.0.1:3000  # pasando por el endpoint HTTP real
 //
 // Un caso es CORRECTO si categoría Y prioridad coinciden con la clasificación de referencia
@@ -16,14 +17,16 @@ import path from 'node:path';
 import { analyze } from '../src/service.js';
 import { validateResult } from '../src/contract.js';
 import { getConfig, isConfigured } from '../src/providers.js';
+import { pingML, closeML } from '../src/ml.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv) {
-  const args = { engines: ['traditional', 'generative'], api: null };
+  const args = { engines: ['traditional', 'generative', 'ml'], api: null, out: 'results' };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--engines') args.engines = argv[++i].split(',').map((s) => s.trim());
     else if (argv[i] === '--api') args.api = argv[++i].replace(/\/$/, '');
+    else if (argv[i] === '--out') args.out = path.basename(argv[++i]); // solo nombre, siempre dentro de results/
   }
   return args;
 }
@@ -86,6 +89,7 @@ function toMarkdown(results, dataset, meta) {
   lines.push('# Resultados comparativos', '');
   lines.push(`Fecha: ${meta.date} · Casos: ${dataset.length} · Vía: ${meta.via}`);
   if (meta.model) lines.push(`Modelo generativo: ${meta.model}`);
+  if (meta.mlModel) lines.push(`Modelo ML: ${meta.mlModel}`);
   lines.push('', 'Criterio de acierto: categoría **y** prioridad iguales a la referencia.', '');
 
   lines.push('## Resumen', '', '| Motor | Correctos | Precisión (cat+prio) | Precisión (solo cat) | Formato válido | Latencia media |');
@@ -111,15 +115,24 @@ function toMarkdown(results, dataset, meta) {
 }
 
 async function main() {
-  const { engines, api } = parseArgs(process.argv.slice(2));
+  const { engines, api, out } = parseArgs(process.argv.slice(2));
   const dataset = JSON.parse(await readFile(path.join(root, 'eval', 'dataset.json'), 'utf8'));
   const config = getConfig();
 
   const results = [];
+  let mlInfo = null;
   for (const engine of engines) {
     if (engine === 'generative' && !api && !isConfigured(config)) {
       console.error(`Se omite "generative": proveedor "${config.provider}" sin configurar. No se simulan resultados.`);
       continue;
+    }
+    if (engine === 'ml' && !api) {
+      try {
+        mlInfo = await pingML();
+      } catch {
+        console.error('Se omite "ml": no se pudo iniciar Python con pandas y scikit-learn (ver ml/requirements.txt).');
+        continue;
+      }
     }
     console.log(`\nEjecutando motor: ${engine}`);
     results.push(await evaluate(engine, dataset, api));
@@ -129,14 +142,18 @@ async function main() {
     date: new Date().toISOString(),
     via: api ? `API ${api}` : 'llamada directa al servicio',
     model: results.some((r) => r.engine === 'generative') ? `${config.provider}/${config.model}` : null,
+    mlModel: mlInfo
+      ? `TF-IDF (1-2 gramas) + LogisticRegression, entrenado con ${mlInfo.trainedOn} ejemplos de ml/`
+      : null,
   };
+  closeML();
   await mkdir(path.join(root, 'results'), { recursive: true });
-  await writeFile(path.join(root, 'results', 'results.json'), JSON.stringify({ meta, results }, null, 2));
-  await writeFile(path.join(root, 'results', 'results.md'), toMarkdown(results, dataset, meta));
+  await writeFile(path.join(root, 'results', `${out}.json`), JSON.stringify({ meta, results }, null, 2));
+  await writeFile(path.join(root, 'results', `${out}.md`), toMarkdown(results, dataset, meta));
 
   console.log('\nResumen:');
   for (const r of results) console.log(`  ${r.engine}: ${r.summary.correct}/${r.summary.total} = ${r.summary.accuracy}%`);
-  console.log('\nGuardado en results/results.json y results/results.md');
+  console.log(`\nGuardado en results/${out}.json y results/${out}.md`);
 }
 
 main().catch((err) => {

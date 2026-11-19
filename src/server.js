@@ -1,12 +1,14 @@
-// PARTE B — API HTTP: POST /api/analyze (y GET /health).
+// PARTE B — API HTTP: POST /api/analyze, POST /api/feedback (aprendizaje del motor ML) y GET /health.
 // Solo módulos nativos de Node: sin Express ni dependencias que auditar.
 
 import http from 'node:http';
+import { createHash, timingSafeEqual } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { MODES } from './contract.js';
+import { CATEGORIES, MODES } from './contract.js';
 import { analyze } from './service.js';
 import { ProviderError } from './providers.js';
 import { GenerativeFormatError } from './generative.js';
+import { MLError, learnML } from './ml.js';
 
 export const MAX_BODY_BYTES = 10 * 1024;
 export const MAX_MESSAGE_LEN = 2000;
@@ -88,13 +90,57 @@ function toHttpError(err) {
     if (err.code === 'PROVIDER_BLOCKED') return new HttpError(502, err.code, 'El proveedor de IA rechazó procesar la solicitud');
     return new HttpError(502, err.code, 'El proveedor de IA no está disponible');
   }
+  if (err instanceof MLError) {
+    if (err.code === 'ML_UNAVAILABLE') return new HttpError(503, err.code, 'El motor de ML no está disponible');
+    if (err.code === 'ML_TIMEOUT') return new HttpError(504, err.code, 'El motor de ML no respondió a tiempo');
+    if (err.code === 'ML_INVALID_INPUT') return new HttpError(400, err.code, 'El mensaje no tiene contenido para aprender');
+    return new HttpError(500, 'ML_FAILED', 'El motor de ML no pudo procesar la solicitud');
+  }
   if (err instanceof GenerativeFormatError) {
     return new HttpError(502, 'INVALID_MODEL_OUTPUT', 'El modelo no devolvió una respuesta con el formato esperado');
   }
   return new HttpError(500, 'INTERNAL_ERROR', 'Error interno del servidor');
 }
 
-export function createServer({ analyzeFn = analyze, log = console.log } = {}) {
+// Valida el cuerpo de POST /api/feedback: { message, category } con una categoría del contrato.
+export function validateFeedback(body) {
+  if (body === null || typeof body !== 'object' || Array.isArray(body)) {
+    throw new HttpError(400, 'INVALID_BODY', 'El cuerpo debe ser un objeto JSON');
+  }
+  if (typeof body.message !== 'string' || !body.message.trim()) {
+    throw new HttpError(400, 'INVALID_MESSAGE', '"message" es obligatorio y debe ser texto');
+  }
+  const message = body.message.trim();
+  if (message.length > MAX_MESSAGE_LEN) {
+    throw new HttpError(400, 'INVALID_MESSAGE', `"message" excede ${MAX_MESSAGE_LEN} caracteres`);
+  }
+  const category = typeof body.category === 'string' ? body.category.trim().toUpperCase() : null;
+  if (!CATEGORIES.includes(category)) {
+    throw new HttpError(400, 'INVALID_CATEGORY', `"category" debe ser una de: ${CATEGORIES.join(', ')}`);
+  }
+  return { message, category };
+}
+
+// Solo quien tenga FEEDBACK_TOKEN puede enseñarle al modelo (evita envenenamiento de datos).
+// Se comparan hashes de igual longitud con timingSafeEqual para no filtrar el token por tiempos.
+function checkFeedbackToken(req, token) {
+  if (!token) throw new HttpError(503, 'FEEDBACK_DISABLED', 'El aprendizaje por feedback no está habilitado');
+  const header = String(req.headers.authorization || '');
+  const given = header.startsWith('Bearer ') ? header.slice(7) : '';
+  const hash = (s) => createHash('sha256').update(s).digest();
+  if (!given || !timingSafeEqual(hash(given), hash(token))) {
+    throw new HttpError(401, 'UNAUTHORIZED', 'Token de feedback inválido');
+  }
+}
+
+const POST_ROUTES = ['/api/analyze', '/api/feedback'];
+
+export function createServer({
+  analyzeFn = analyze,
+  learnFn = learnML,
+  feedbackToken = process.env.FEEDBACK_TOKEN,
+  log = console.log,
+} = {}) {
   return http.createServer(async (req, res) => {
     const started = Date.now();
     let info = {};
@@ -104,10 +150,15 @@ export function createServer({ analyzeFn = analyze, log = console.log } = {}) {
       if (url.pathname === '/health' && req.method === 'GET') {
         return send(res, 200, { status: 'ok' });
       }
-      if (url.pathname !== '/api/analyze') throw new HttpError(404, 'NOT_FOUND', 'Ruta no encontrada');
+      if (!POST_ROUTES.includes(url.pathname)) throw new HttpError(404, 'NOT_FOUND', 'Ruta no encontrada');
       if (req.method !== 'POST') {
         res.setHeader('allow', 'POST');
         throw new HttpError(405, 'METHOD_NOT_ALLOWED', 'Use POST');
+      }
+      const isFeedback = url.pathname === '/api/feedback';
+      if (isFeedback) {
+        info = { route: 'feedback' };
+        checkFeedbackToken(req, feedbackToken);
       }
       if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('application/json')) {
         throw new HttpError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Content-Type debe ser application/json');
@@ -119,6 +170,13 @@ export function createServer({ analyzeFn = analyze, log = console.log } = {}) {
       } catch (err) {
         if (err instanceof HttpError) throw err;
         throw new HttpError(400, 'INVALID_JSON', 'El cuerpo no es JSON válido');
+      }
+
+      if (isFeedback) {
+        const { message, category } = validateFeedback(parsed);
+        info = { route: 'feedback', category };
+        const { trainedOn } = await learnFn(message, category);
+        return send(res, 200, { ok: true, trainedOn });
       }
 
       const { message, mode } = validateRequest(parsed);

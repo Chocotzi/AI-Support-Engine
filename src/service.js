@@ -3,9 +3,11 @@
 
 import { analyzeTraditional } from './traditional.js';
 import { analyzeGenerative } from './generative.js';
+import { analyzeML } from './ml.js';
 
 export async function analyze(message, mode, deps = {}) {
   if (mode === 'traditional') return analyzeTraditional(message);
   if (mode === 'generative') return analyzeGenerative(message, deps);
+  if (mode === 'ml') return analyzeML(message, deps);
   throw new Error(`mode no soportado: ${mode}`);
 }
