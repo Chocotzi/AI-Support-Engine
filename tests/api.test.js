@@ -4,6 +4,7 @@ import { createServer } from '../src/server.js';
 import { analyze } from '../src/service.js';
 import { ProviderError } from '../src/providers.js';
 import { GenerativeFormatError } from '../src/generative.js';
+import { MODES } from '../src/contract.js';
 
 let server;
 let base;
@@ -73,6 +74,26 @@ test('errores del proveedor -> códigos seguros sin detalles internos', async ()
     assert.ok(!(await res.text()).includes('secreto-interno'));
   }
   nextError = null;
+});
+
+test('GET / devuelve la guía de uso con sangría y un ejemplo real', async () => {
+  const res = await fetch(`${base}/`);
+  assert.equal(res.status, 200);
+  const text = await res.text();
+  assert.ok(text.includes('\n  "service": "AI Support Engine"'), 'JSON con sangría de 2 espacios');
+  const j = JSON.parse(text);
+  assert.ok(j.endpoints.some((e) => e.method === 'POST' && e.path === '/api/analyze'));
+  assert.deepEqual(Object.keys(j.engines).sort(), [...MODES].sort());
+  assert.deepEqual(j.example.request, { message: 'No puedo iniciar sesión', mode: 'traditional' });
+  assert.equal(j.example.response.category, 'ACCESS');
+  assert.equal(j.example.response.mode, 'traditional');
+});
+
+test('sangría solo en las GET: POST /api/analyze sigue compacto', async () => {
+  assert.ok((await (await fetch(`${base}/health`)).text()).includes('\n  "status": "ok"'));
+  assert.ok((await (await fetch(`${base}/metrics`)).text()).includes('\n  "requests"'));
+  const body = await (await post({ message: 'No puedo iniciar sesión', mode: 'traditional' })).text();
+  assert.ok(!body.includes('\n'), 'la respuesta de la API va en una sola línea');
 });
 
 test('GET /health informa versión, entorno y tiempo activo', async () => {

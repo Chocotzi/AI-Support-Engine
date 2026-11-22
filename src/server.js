@@ -1,9 +1,11 @@
-// PARTE B — API HTTP: POST /api/analyze (y GET /health).
+// PARTE B — API HTTP: POST /api/analyze (y GET /, /health y /metrics).
 // Solo módulos nativos de Node: sin Express ni dependencias que auditar.
 
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { appInfo, createMetrics } from './metrics.js';
+import { serviceIndex } from './info.js';
+import { prettyJson } from './json-format.js';
 import { MODES } from './contract.js';
 import { analyze } from './service.js';
 import { ProviderError } from './providers.js';
@@ -23,8 +25,10 @@ class HttpError extends Error {
   }
 }
 
-function send(res, status, body) {
-  const payload = JSON.stringify(body);
+// pretty: con sangría de 2 espacios, para las rutas GET que se leen en el navegador.
+// POST /api/analyze se queda compacto: lo consumen programas.
+function send(res, status, body, { pretty = false } = {}) {
+  const payload = pretty ? prettyJson(body) : JSON.stringify(body);
   res.writeHead(status, {
     'content-type': 'application/json; charset=utf-8',
     'content-length': Buffer.byteLength(payload),
@@ -95,9 +99,9 @@ function toHttpError(err) {
   return new HttpError(500, 'INTERNAL_ERROR', 'Error interno del servidor');
 }
 
-// Rutas de monitoreo: no se cuentan en las métricas ni se registran en el log
-// (Render consulta /health cada pocos segundos y taparía el tráfico real).
-const MONITORING_PATHS = new Set(['/health', '/metrics']);
+// Rutas informativas y de monitoreo: no se cuentan en las métricas ni se registran en el
+// log (Render consulta /health cada pocos segundos y taparía el tráfico real).
+const MONITORING_PATHS = new Set(['/', '/health', '/metrics']);
 
 export function createServer({ analyzeFn = analyze, log = console.log, metrics = createMetrics() } = {}) {
   return http.createServer(async (req, res) => {
@@ -108,11 +112,14 @@ export function createServer({ analyzeFn = analyze, log = console.log, metrics =
       const url = new URL(req.url, 'http://localhost');
       monitoring = MONITORING_PATHS.has(url.pathname) && req.method === 'GET';
 
+      if (url.pathname === '/' && req.method === 'GET') {
+        return send(res, 200, await serviceIndex(), { pretty: true });
+      }
       if (url.pathname === '/health' && req.method === 'GET') {
-        return send(res, 200, { status: 'ok', ...appInfo(), uptimeSeconds: metrics.uptimeSeconds() });
+        return send(res, 200, { status: 'ok', ...appInfo(), uptimeSeconds: metrics.uptimeSeconds() }, { pretty: true });
       }
       if (url.pathname === '/metrics' && req.method === 'GET') {
-        return send(res, 200, metrics.snapshot());
+        return send(res, 200, metrics.snapshot(), { pretty: true });
       }
       if (url.pathname !== '/api/analyze') throw new HttpError(404, 'NOT_FOUND', 'Ruta no encontrada');
       if (req.method !== 'POST') {
