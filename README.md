@@ -61,7 +61,7 @@ cada h  → monitor de producción
 | `npm run deploy` | Despliega un commit exacto vía deploy hook (lo usa el pipeline) |
 | `npm run monitor -- <url>` | Disponibilidad, latencia y errores contra los niveles de servicio |
 
-`GET /health` incluye `version` (commit desplegado), `environment` y `uptimeSeconds`. `GET /metrics` devuelve peticiones, errores y latencia p50/p95 por motor desde el último arranque. Nunca incluye el contenido de los mensajes.
+`GET /` muestra una guía de uso: motores disponibles, rutas y un ejemplo real del motor tradicional. `GET /health` incluye `version` (commit desplegado), `environment` y `uptimeSeconds`. `GET /metrics` devuelve peticiones, errores y latencia p50/p95 por motor desde el último arranque. Nunca incluye el contenido de los mensajes.
 
 ## API
 

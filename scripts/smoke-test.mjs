@@ -66,6 +66,13 @@ if (expectVersion) {
   check('Versión desplegada = commit probado', sameVersion(health.json.version, expectVersion), `sirve ${short(health.json.version)}, se esperaba ${short(expectVersion)}`);
 }
 
+// Guía de uso en la raíz.
+{
+  const r = await timedFetch(`${base}/`);
+  const ok = r.status === 200 && r.json?.service === 'AI Support Engine' && r.json?.example?.response?.category === 'ACCESS';
+  check('GET / guía de uso', ok, ok ? `motores: ${Object.keys(r.json.engines).join(', ')}` : r.ok ? `HTTP ${r.status}` : r.error);
+}
+
 // 2. Contrato y clasificación del motor tradicional (determinista: siempre igual).
 const CASES = [
   { name: 'ACCESS', message: 'No puedo iniciar sesión, me dice contraseña incorrecta', category: 'ACCESS', review: false },
