@@ -1,7 +1,7 @@
-// PARTE A — Evaluación comparativa de ambos motores.
+// PARTE A — Evaluación comparativa de los motores (traditional, generative y ml).
 //
 // Uso:
-//   node eval/run-eval.js                              # ambos motores
+//   node eval/run-eval.js                              # los tres motores
 //   node eval/run-eval.js --engines traditional        # solo uno
 //   node eval/run-eval.js --api http://127.0.0.1:3000  # pasando por el endpoint HTTP real
 //
@@ -16,11 +16,12 @@ import path from 'node:path';
 import { analyze } from '../src/service.js';
 import { validateResult } from '../src/contract.js';
 import { getConfig, isConfigured } from '../src/providers.js';
+import { modelInfo } from '../src/ml.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function parseArgs(argv) {
-  const args = { engines: ['traditional', 'generative'], api: null };
+  const args = { engines: ['traditional', 'generative', 'ml'], api: null };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--engines') args.engines = argv[++i].split(',').map((s) => s.trim());
     else if (argv[i] === '--api') args.api = argv[++i].replace(/\/$/, '');
@@ -86,6 +87,7 @@ function toMarkdown(results, dataset, meta) {
   lines.push('# Resultados comparativos', '');
   lines.push(`Fecha: ${meta.date} · Casos: ${dataset.length} · Vía: ${meta.via}`);
   if (meta.model) lines.push(`Modelo generativo: ${meta.model}`);
+  if (meta.mlModel) lines.push(`Modelo ml: ${meta.mlModel}`);
   lines.push('', 'Criterio de acierto: categoría **y** prioridad iguales a la referencia.', '');
 
   lines.push('## Resumen', '', '| Motor | Correctos | Precisión (cat+prio) | Precisión (solo cat) | Formato válido | Latencia media |');
@@ -110,6 +112,16 @@ function toMarkdown(results, dataset, meta) {
   return lines.join('\n') + '\n';
 }
 
+function describeMlModel() {
+  let m;
+  try {
+    m = modelInfo();
+  } catch {
+    return 'ml/model.json no disponible (ejecute npm run train)';
+  }
+  return `TF-IDF (1-2 gramas, ${m.features} términos) + regresión logística, entrenado con ${m.trainedOn} tickets de ml/tickets.csv (scikit-learn ${m.sklearn})`;
+}
+
 async function main() {
   const { engines, api } = parseArgs(process.argv.slice(2));
   const dataset = JSON.parse(await readFile(path.join(root, 'eval', 'dataset.json'), 'utf8'));
@@ -129,6 +141,7 @@ async function main() {
     date: new Date().toISOString(),
     via: api ? `API ${api}` : 'llamada directa al servicio',
     model: results.some((r) => r.engine === 'generative') ? `${config.provider}/${config.model}` : null,
+    mlModel: results.some((r) => r.engine === 'ml') ? describeMlModel() : null,
   };
   await mkdir(path.join(root, 'results'), { recursive: true });
   await writeFile(path.join(root, 'results', 'results.json'), JSON.stringify({ meta, results }, null, 2));

@@ -1,0 +1,3 @@
+# Solo para entrenar el motor ml (npm run train). El servidor no necesita Python.
+pandas==3.1.1
+scikit-learn==1.9.1

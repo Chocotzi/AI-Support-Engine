@@ -4,6 +4,7 @@ import { createServer } from '../src/server.js';
 import { analyze } from '../src/service.js';
 import { ProviderError } from '../src/providers.js';
 import { GenerativeFormatError } from '../src/generative.js';
+import { MLModelError } from '../src/ml.js';
 
 let server;
 let base;
@@ -30,6 +31,14 @@ test('200 modo traditional con el contrato completo', async () => {
   assert.equal(j.category, 'ACCESS');
   assert.equal(j.mode, 'traditional');
   assert.equal(typeof j.requiresHumanReview, 'boolean');
+});
+
+test('200 modo ml con el contrato completo', async () => {
+  const res = await post({ message: 'No puedo iniciar sesión', mode: 'ml' });
+  assert.equal(res.status, 200);
+  const j = await res.json();
+  assert.deepEqual(Object.keys(j).sort(), ['category', 'mode', 'priority', 'requiresHumanReview', 'response']);
+  assert.equal(j.mode, 'ml');
 });
 
 test('400 por entradas inválidas', async () => {
@@ -64,6 +73,7 @@ test('errores del proveedor -> códigos seguros sin detalles internos', async ()
     [new ProviderError('PROVIDER_HTTP', 'secreto-interno', 500), 502],
     [new ProviderError('PROVIDER_BLOCKED', 'secreto-interno'), 502],
     [new GenerativeFormatError('secreto-interno'), 502],
+    [new MLModelError('secreto-interno'), 503],
     [new Error('boom secreto-interno'), 500],
   ];
   for (const [err, status] of cases) {

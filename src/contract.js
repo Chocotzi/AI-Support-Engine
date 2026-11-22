@@ -1,6 +1,6 @@
 // CONTRATO COMPARTIDO (lo definen A y B juntos en la Fase 0).
 //
-// Ambos motores devuelven EXACTAMENTE esta forma:
+// Todos los motores (traditional, generative y ml) devuelven EXACTAMENTE esta forma:
 //   { category, priority, response, requiresHumanReview, mode }
 //
 // Toda salida (sobre todo la del modelo generativo) pasa por validateResult()
@@ -9,7 +9,7 @@
 
 export const CATEGORIES = ['ACCESS', 'BUG', 'FEATURE', 'SECURITY'];
 export const PRIORITIES = ['LOW', 'MEDIUM', 'HIGH', 'CRITICAL'];
-export const MODES = ['traditional', 'generative'];
+export const MODES = ['traditional', 'generative', 'ml'];
 export const MAX_RESPONSE_LEN = 1200;
 
 export class ContractError extends Error {

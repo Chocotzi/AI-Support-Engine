@@ -1,7 +1,7 @@
 {
   "name": "ai-support-engine",
   "version": "1.0.0",
-  "description": "Clasificador inteligente de solicitudes de soporte: motor tradicional (reglas) y generativo (LLM)",
+  "description": "Clasificador inteligente de solicitudes de soporte: motor tradicional (reglas), generativo (LLM) y ml (TF-IDF + regresión logística)",
   "type": "module",
   "private": true,
   "engines": { "node": ">=22" },
@@ -9,6 +9,8 @@
     "start": "node --env-file-if-exists=.env src/server.js",
     "test": "node --test \"tests/*.test.js\"",
     "eval": "node --env-file-if-exists=.env eval/run-eval.js",
-    "eval:traditional": "node eval/run-eval.js --engines traditional"
+    "eval:traditional": "node eval/run-eval.js --engines traditional",
+    "eval:ml": "node eval/run-eval.js --engines ml",
+    "train": "node ml/run-train.js"
   }
 }

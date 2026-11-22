@@ -1,0 +1,241 @@
+message,category,priority
+"Olvidé mi contraseña y el enlace para restablecerla ya expiró.",ACCESS,MEDIUM
+"No me llega el correo de recuperación de contraseña, ya revisé la carpeta de spam.",ACCESS,MEDIUM
+"Mi usuario aparece como desactivado y no sé por qué.",ACCESS,MEDIUM
+"Cambié de celular y ya no tengo la app de autenticación para el segundo factor.",ACCESS,MEDIUM
+"Cuando entro con mi cuenta de Microsoft me regresa a la pantalla de inicio una y otra vez.",ACCESS,MEDIUM
+"Me sale acceso denegado al abrir el módulo de compras aunque ayer sí podía.",ACCESS,MEDIUM
+"Soy nuevo en la empresa y todavía no tengo usuario para el portal.",ACCESS,MEDIUM
+"La sesión se me cierra cada cinco minutos y tengo que volver a autenticarme.",ACCESS,MEDIUM
+"No puedo acceder a la carpeta compartida de finanzas, dice que no tengo permisos.",ACCESS,MEDIUM
+"Escribo bien mi correo pero el sistema responde que el usuario no existe.",ACCESS,MEDIUM
+"El captcha no me deja pasar y no consigo entrar a mi cuenta.",ACCESS,MEDIUM
+"Ningún empleado puede ingresar al portal, el servicio de autenticación no responde.",ACCESS,CRITICAL
+"Todo el equipo de ventas se quedó sin acceso al CRM después del cambio de contraseñas.",ACCESS,HIGH
+"Necesito que reactiven mi cuenta, regresé de vacaciones y ya no me reconoce el sistema.",ACCESS,MEDIUM
+"La invitación para unirme al espacio de trabajo dice que el enlace no es válido.",ACCESS,MEDIUM
+"Mi contraseña caducó y el formulario para cambiarla no acepta ninguna nueva.",ACCESS,MEDIUM
+"No recibo el SMS con el código de acceso en mi teléfono.",ACCESS,MEDIUM
+"Perdí el teléfono donde tenía configurada la verificación en dos pasos.",ACCESS,MEDIUM
+"El administrador del sistema no puede entrar a la consola y hay tareas urgentes pendientes.",ACCESS,HIGH
+"Al cambiar de pestaña el portal me saca y me pide ingresar de nuevo.",ACCESS,MEDIUM
+"Quiero cambiar el correo con el que inicio sesión porque la empresa cambió de dominio.",ACCESS,LOW
+"Mi cuenta quedó suspendida por falta de pago, pero la factura ya está pagada.",ACCESS,MEDIUM
+"No puedo conectarme a la VPN desde casa, me marca credenciales inválidas.",ACCESS,MEDIUM
+"Los practicantes nuevos no tienen permisos para ver los tableros del proyecto.",ACCESS,HIGH
+"La aplicación móvil ya no reconoce mi huella para entrar, con la contraseña sí puedo.",ACCESS,LOW
+"El sistema dice que mi usuario está bloqueado y que contacte al administrador.",ACCESS,MEDIUM
+"Al entrar con Google aparece un error de autorización y no avanza.",ACCESS,MEDIUM
+"No tengo acceso al repositorio de código del proyecto nuevo.",ACCESS,MEDIUM
+"El enlace de inicio de sesión que me envían por correo ya llega caducado.",ACCESS,MEDIUM
+"Desde que activaron el inicio de sesión único ya no puedo usar mi usuario local.",ACCESS,MEDIUM
+"Necesito permisos de edición en el calendario del área, solo tengo lectura.",ACCESS,MEDIUM
+"Varios clientes reportan que el portal de autoservicio rechaza sus credenciales.",ACCESS,HIGH
+"¿Cómo restablezco el PIN de acceso de la aplicación?",ACCESS,MEDIUM
+"Mi jefe me dio acceso al tablero pero sigo sin poder abrirlo.",ACCESS,MEDIUM
+"No logro autenticarme en la impresora con mi gafete.",ACCESS,MEDIUM
+"Me apareció un aviso de que mi cuenta fue deshabilitada por inactividad.",ACCESS,MEDIUM
+"El token físico que me entregaron ya no genera códigos válidos.",ACCESS,MEDIUM
+"Hace dos días que no consigo entrar a mi correo corporativo.",ACCESS,MEDIUM
+"Requiero acceso de administrador temporal para instalar un programa.",ACCESS,MEDIUM
+"El turno de noche completo no puede iniciar sesión en las terminales del almacén.",ACCESS,HIGH
+"Tengo dos cuentas y el sistema solo me deja ingresar con la antigua.",ACCESS,MEDIUM
+"Después de cambiar mi apellido no puedo entrar con el usuario nuevo.",ACCESS,MEDIUM
+"Me piden responder preguntas de seguridad que nunca configuré y no puedo continuar.",ACCESS,MEDIUM
+"¿Me pueden dar acceso al sistema de recursos humanos? Me cambiaron de área.",ACCESS,MEDIUM
+"I forgot my password and the reset link does not work.",ACCESS,MEDIUM
+"I can't sign in with my company SSO account.",ACCESS,MEDIUM
+"Our support team lost access to the ticketing tool after the update.",ACCESS,HIGH
+"My two-factor code is always rejected as invalid.",ACCESS,MEDIUM
+"No me deja ingresar, dice sesión expirada aunque acabo de autenticarme.",ACCESS,MEDIUM
+"Ya no aparece la opción para iniciar sesión con mi cuenta institucional.",ACCESS,MEDIUM
+"Me cambiaron de puesto y perdí el acceso a los reportes que uso a diario.",ACCESS,MEDIUM
+"El gerente regional no puede autorizar pedidos porque su usuario perdió el rol de aprobador.",ACCESS,HIGH
+"Solo puedo acceder desde la red de mi casa, desde la oficina nueva me rechaza.",ACCESS,MEDIUM
+"Olvidé mi nombre de usuario, ¿cómo lo recupero?",ACCESS,MEDIUM
+"La contraseña temporal no funciona en el primer ingreso.",ACCESS,MEDIUM
+"El portal de proveedores no reconoce las credenciales que nos enviaron.",ACCESS,MEDIUM
+"Al escanear el código QR para vincular el autenticador me marca código vencido.",ACCESS,MEDIUM
+"Los cajeros de la sucursal centro no pueden autenticarse en el punto de venta.",ACCESS,HIGH
+"No consigo entrar a la intranet con mi usuario de siempre, dice credenciales no válidas.",ACCESS,MEDIUM
+"Nadie de la empresa puede iniciar sesión en el correo desde el corte de luz.",ACCESS,CRITICAL
+"La aplicación se congela cuando adjunto archivos de más de 5 MB.",BUG,MEDIUM
+"El buscador no encuentra nada cuando escribo palabras con acentos.",BUG,MEDIUM
+"Los totales del reporte de inventario no coinciden con la suma de las filas.",BUG,MEDIUM
+"La página de inicio tarda más de un minuto en cargar.",BUG,MEDIUM
+"Hay una falta de ortografía en el menú de configuración.",BUG,LOW
+"El botón de enviar se ve desalineado en la versión móvil.",BUG,LOW
+"Las notificaciones por correo llegan duplicadas.",BUG,MEDIUM
+"Al importar el CSV de productos aparece un error y no se carga nada.",BUG,MEDIUM
+"La app se cierra sola cuando abro la cámara para escanear.",BUG,MEDIUM
+"El calendario muestra las citas con una hora de diferencia desde el cambio de horario.",BUG,MEDIUM
+"Las facturas se están generando con el IVA mal calculado para todos los clientes.",BUG,HIGH
+"El módulo de nómina en producción dejó de responder justo el día de pago.",BUG,CRITICAL
+"Al sincronizar la aplicación se perdieron los cambios que hice durante todo el día.",BUG,CRITICAL
+"Los gráficos del tablero no se actualizan desde ayer.",BUG,MEDIUM
+"Me aparece una pantalla en blanco al abrir el historial de pedidos.",BUG,MEDIUM
+"El texto de los botones se ve cortado en la versión en inglés.",BUG,LOW
+"La exportación a CSV pone todos los datos en una sola columna.",BUG,MEDIUM
+"Cuando cambio el idioma, la mitad de la pantalla sigue en español.",BUG,LOW
+"El formulario de registro marca error en el teléfono aunque el número es válido.",BUG,MEDIUM
+"Los webhooks hacia nuestro ERP fallan de forma intermitente.",BUG,MEDIUM
+"La app de Android se traba al girar la pantalla.",BUG,MEDIUM
+"El filtro por fecha ignora el rango que selecciono.",BUG,MEDIUM
+"Al imprimir la orden de compra salen caracteres extraños en lugar de las eñes.",BUG,LOW
+"Varios usuarios reportan que el chat interno se desconecta cada pocos minutos.",BUG,HIGH
+"El sistema se cae cada vez que más de cien personas entran al mismo tiempo.",BUG,HIGH
+"Los correos de confirmación llevan un enlace roto.",BUG,MEDIUM
+"La paginación de la tabla de clientes repite los mismos registros.",BUG,MEDIUM
+"El ícono de la campana tiene un color distinto en cada pantalla.",BUG,LOW
+"Se duplicaron los pedidos de hoy en la base de datos.",BUG,HIGH
+"El cálculo de comisiones de los vendedores salió en cero este mes.",BUG,HIGH
+"La carga de imágenes llega al 100% pero nunca termina.",BUG,MEDIUM
+"El sistema muestra las fechas en formato estadounidense aunque configuré México.",BUG,LOW
+"Desde la última versión, el editor de texto borra el formato al pegar.",BUG,MEDIUM
+"El servicio de facturación electrónica está caído y no se puede timbrar ninguna factura.",BUG,CRITICAL
+"La base de datos de reportes se corrompió después del respaldo nocturno.",BUG,CRITICAL
+"The export button throws an exception on large files.",BUG,MEDIUM
+"Search results load extremely slowly since the last release.",BUG,MEDIUM
+"The mobile app freezes on the checkout screen.",BUG,MEDIUM
+"There is a typo on the login page footer.",BUG,LOW
+"El contador de tareas pendientes muestra un número negativo.",BUG,LOW
+"Me sale un error 404 al abrir el manual desde la ayuda.",BUG,MEDIUM
+"El mapa de entregas no carga en Safari.",BUG,MEDIUM
+"Las alertas de stock bajo se disparan aunque haya inventario suficiente.",BUG,MEDIUM
+"Cuando creo un borrador, el sistema sobrescribe el documento original sin avisar.",BUG,HIGH
+"El reporte de asistencia omite a los empleados del turno de noche.",BUG,MEDIUM
+"La API devuelve timeout cuando pedimos más de mil registros.",BUG,MEDIUM
+"La aplicación está rarísima hoy, nada carga bien.",BUG,MEDIUM
+"El sistema de citas permite reservar dos veces el mismo horario.",BUG,MEDIUM
+"La sincronización con el calendario de Outlook dejó de funcionar.",BUG,MEDIUM
+"Los descuentos no se aplican en el carrito aunque el cupón es válido.",BUG,MEDIUM
+"El programa marca error de memoria y se cierra al abrir proyectos grandes.",BUG,MEDIUM
+"Algunas imágenes de los productos se ven pixeladas en la tienda.",BUG,LOW
+"El código de barras que se imprime no lo reconoce ningún lector.",BUG,MEDIUM
+"Los saldos de cuentas por cobrar muestran datos incorrectos para todos los clientes.",BUG,HIGH
+"El asistente de configuración se queda en el paso tres y no avanza.",BUG,MEDIUM
+"La aplicación de escritorio consume casi toda la memoria después de unas horas.",BUG,MEDIUM
+"El enlace para descargar el estado de cuenta lleva a una página de error.",BUG,MEDIUM
+"El sistema dejó de enviar los recordatorios automáticos de pago desde el lunes.",BUG,MEDIUM
+"El servicio de envío de SMS falla con error 503 para todos los clientes.",BUG,HIGH
+"Cada vez que intento generar la nómina el sistema arroja una excepción.",BUG,MEDIUM
+"Me gustaría poder etiquetar los documentos por proyecto.",FEATURE,LOW
+"Sería útil recibir un aviso en Teams cuando me asignan una tarea.",FEATURE,LOW
+"¿Podrían añadir la opción de duplicar una cotización?",FEATURE,LOW
+"Queremos poder asignar varios responsables a un mismo ticket.",FEATURE,LOW
+"Propongo agregar atajos de teclado para las acciones más comunes.",FEATURE,LOW
+"Necesitamos una integración con WhatsApp para avisar a los clientes del estado de su pedido.",FEATURE,MEDIUM
+"Estaría bien que el tablero mostrara un gráfico de ventas por región.",FEATURE,LOW
+"Sugiero que se pueda aumentar el tamaño de la letra para personas con baja visión.",FEATURE,LOW
+"Nos haría falta una API pública para consultar el inventario desde nuestro sitio.",FEATURE,MEDIUM
+"Me encantaría poder arrastrar y soltar archivos en lugar de buscarlos en carpetas.",FEATURE,LOW
+"Por requisito del contrato con un cliente, necesitamos firmar documentos electrónicamente en la plataforma.",FEATURE,MEDIUM
+"Quisiera que el sistema permitiera campos personalizados en la ficha de clientes.",FEATURE,LOW
+"Sería bueno tener plantillas prediseñadas para los correos de seguimiento.",FEATURE,LOW
+"¿Es posible agregar soporte para varias monedas en las cotizaciones?",FEATURE,LOW
+"Pedimos que la aplicación funcione sin conexión y sincronice al recuperar la señal.",FEATURE,LOW
+"Nuestros clientes piden poder pagar con transferencia desde el portal.",FEATURE,MEDIUM
+"Me gustaría ver el historial de cambios de cada registro.",FEATURE,LOW
+"Podrían incluir una vista compacta para la lista de tareas.",FEATURE,LOW
+"Queremos un tablero con indicadores de desempeño por vendedor.",FEATURE,LOW
+"Agreguen la opción de exportar el directorio de contactos en formato vCard.",FEATURE,LOW
+"Sería genial poder comentar directamente sobre los archivos PDF.",FEATURE,LOW
+"Necesitamos poder aprobar las solicitudes de vacaciones desde el celular.",FEATURE,MEDIUM
+"Quiero poder crear encuestas de satisfacción para enviarlas a los clientes.",FEATURE,LOW
+"Sería práctico un buscador global que encuentre clientes, pedidos y facturas a la vez.",FEATURE,LOW
+"Proponemos que el sistema sugiera productos relacionados al capturar un pedido.",FEATURE,LOW
+"Nos gustaría integrar el sistema con Google Calendar para las citas.",FEATURE,LOW
+"Hace falta un reporte de rotación de inventario por almacén.",FEATURE,LOW
+"¿Pueden habilitar la opción de dividir una factura en varios pagos?",FEATURE,LOW
+"Por la nueva regulación fiscal necesitamos un campo para el régimen del cliente.",FEATURE,MEDIUM
+"Me gustaría poder fijar mis proyectos favoritos al inicio de la lista.",FEATURE,LOW
+"It would be nice to have a Slack integration for alerts.",FEATURE,LOW
+"Please add support for bulk editing products.",FEATURE,LOW
+"Could you add sign in with hardware security keys?",FEATURE,LOW
+"We would like to customize the colors of the invoice template.",FEATURE,LOW
+"Solicito que se agregue la opción de iniciar sesión con huella en la aplicación.",FEATURE,LOW
+"Queremos que los gerentes puedan definir permisos por rol desde la interfaz.",FEATURE,LOW
+"Sería interesante tener un chat en vivo para atender a los clientes desde el sitio.",FEATURE,LOW
+"Agradecería una opción para archivar proyectos terminados sin borrarlos.",FEATURE,LOW
+"¿Podrían permitir subir videos en las fichas de producto?",FEATURE,LOW
+"Necesitamos generar códigos QR para identificar cada activo del inventario.",FEATURE,MEDIUM
+"Estaría padre que la app tuviera widgets para la pantalla de inicio del celular.",FEATURE,LOW
+"Mejora propuesta: que el formulario recuerde los últimos datos capturados.",FEATURE,LOW
+"Los clientes solicitan un portal donde descarguen sus facturas sin llamarnos.",FEATURE,MEDIUM
+"Me gustaría poder dividir una tarea grande en subtareas.",FEATURE,LOW
+"Sugerencia: mostrar el tiempo estimado de entrega en la confirmación del pedido.",FEATURE,LOW
+"Sería bueno poder calificar a los proveedores después de cada compra.",FEATURE,LOW
+"Queremos conectar el sistema con nuestra paquetería para generar las guías de envío.",FEATURE,LOW
+"Pido que se agregue la opción de imprimir etiquetas en lote.",FEATURE,LOW
+"Nos serviría mucho un calendario compartido para reservar salas de juntas.",FEATURE,LOW
+"Necesitamos que el sistema emita facturas en inglés para clientes extranjeros.",FEATURE,MEDIUM
+"Por requisito de la dirección necesitamos un registro de quién modifica cada precio.",FEATURE,MEDIUM
+"Podrían agregar la traducción automática de los mensajes de los clientes.",FEATURE,LOW
+"¿Hay forma de que agreguen recordatorios por SMS para las citas?",FEATURE,LOW
+"Me gustaría elegir qué columnas ver en la tabla de pedidos.",FEATURE,LOW
+"Propuesta: permitir que los clientes cambien la fecha de su cita sin llamar.",FEATURE,LOW
+"Queremos un modo kiosco para usar la app en la tienda.",FEATURE,LOW
+"Sería conveniente que el sistema calculara solo los días de vacaciones disponibles.",FEATURE,LOW
+"Feature request: let us download dashboards as images.",FEATURE,LOW
+"Integren por favor un lector de facturas XML para no capturarlas a mano.",FEATURE,LOW
+"Mi idea es agregar un tablero de anuncios para comunicados internos.",FEATURE,LOW
+"El formulario de contacto permite insertar scripts, parece una vulnerabilidad XSS.",SECURITY,HIGH
+"Un virus cifró los archivos del servidor compartido y piden un rescate.",SECURITY,CRITICAL
+"Nos llegó un correo que imita al banco y pide confirmar los datos de la tarjeta corporativa.",SECURITY,HIGH
+"Alguien publicó las credenciales de la base de datos en un repositorio público.",SECURITY,CRITICAL
+"Hay cientos de intentos de inicio de sesión desde otro país contra la cuenta del director.",SECURITY,HIGH
+"Perdí la laptop del trabajo con información de clientes y el disco no estaba cifrado.",SECURITY,HIGH
+"El antivirus detectó malware en la computadora de recepción.",SECURITY,HIGH
+"Las contraseñas de los usuarios se guardan en texto plano en la base de datos.",SECURITY,HIGH
+"Me llamó alguien que decía ser de sistemas y me pidió mi clave de acceso.",SECURITY,HIGH
+"Hay movimientos en la cuenta bancaria de la empresa que nadie reconoce.",SECURITY,CRITICAL
+"El certificado del sitio fue reemplazado por uno que no emitimos nosotros.",SECURITY,HIGH
+"Detectamos tráfico extraño saliendo del servidor de correo hacia una IP desconocida.",SECURITY,CRITICAL
+"La librería de autenticación que usamos tiene una vulnerabilidad crítica publicada.",SECURITY,HIGH
+"Un empleado compartió la contraseña del sistema de nómina en un grupo de chat público.",SECURITY,HIGH
+"Se filtró una lista con correos y teléfonos de nuestros clientes en un foro.",SECURITY,CRITICAL
+"Si cambio el número de pedido en el enlace puedo ver los pedidos de otros clientes.",SECURITY,HIGH
+"Alguien entró a la cuenta de correo del gerente y envió mensajes a los clientes.",SECURITY,CRITICAL
+"Llegó por paquetería una memoria USB sin remitente y un compañero la conectó a su equipo.",SECURITY,HIGH
+"La página principal del sitio muestra un mensaje de hackers.",SECURITY,CRITICAL
+"La API entrega datos de clientes sin pedir ningún tipo de autenticación.",SECURITY,HIGH
+"Un correo con un adjunto raro se reenvió a todo el departamento y varios lo abrieron.",SECURITY,HIGH
+"El firewall reporta un escaneo de puertos constante desde ayer.",SECURITY,HIGH
+"Estamos recibiendo un ataque de denegación de servicio contra la página.",SECURITY,HIGH
+"Creo que mi computadora tiene un keylogger, el cursor se mueve solo.",SECURITY,HIGH
+"El respaldo con datos de clientes quedó en un almacenamiento público de internet.",SECURITY,CRITICAL
+"Un usuario sin privilegios logró volverse administrador modificando una cookie.",SECURITY,HIGH
+"Los clientes reciben mensajes de texto con enlaces falsos a nombre de la empresa.",SECURITY,HIGH
+"Una cuenta de servicio está creando usuarios a medianoche sin autorización.",SECURITY,CRITICAL
+"El sistema permite subir archivos ejecutables haciéndolos pasar por imágenes.",SECURITY,HIGH
+"Nadie cambió nunca la contraseña de fábrica del router de la oficina.",SECURITY,HIGH
+"Mi antivirus bloqueó un archivo descargado del portal de la empresa.",SECURITY,HIGH
+"We found a CSRF vulnerability in the account settings form.",SECURITY,HIGH
+"Someone is sending phishing emails using our domain.",SECURITY,HIGH
+"Our database credentials were leaked on a public paste site.",SECURITY,CRITICAL
+"Ransomware encrypted the accounting shared drive.",SECURITY,CRITICAL
+"Sospecho que alguien está usando mi cuenta, aparecen compras que yo no hice.",SECURITY,HIGH
+"Las cámaras de la oficina quedaron accesibles desde internet sin contraseña.",SECURITY,HIGH
+"Las llaves de la API de pagos aparecen en el código fuente del sitio.",SECURITY,HIGH
+"Hay un dispositivo desconocido conectado a la red interna del almacén.",SECURITY,HIGH
+"Un proveedor nos avisó que comprometieron su sistema y tenía acceso a nuestros datos.",SECURITY,HIGH
+"Varios usuarios recibieron alertas de inicio de sesión que ellos no hicieron.",SECURITY,HIGH
+"El servidor web usa una versión sin parches con fallas de seguridad conocidas.",SECURITY,HIGH
+"Un enlace en el chat de soporte descarga un archivo sospechoso.",SECURITY,HIGH
+"Alguien modificó los precios de la tienda sin tener permiso para hacerlo.",SECURITY,CRITICAL
+"Me llegó un aviso de que cambiaron mi contraseña y yo no la cambié.",SECURITY,HIGH
+"El reporte con los sueldos de todos se envió por error a una lista de correo externa.",SECURITY,CRITICAL
+"Encontramos un programa de minería de criptomonedas corriendo en uno de los servidores.",SECURITY,HIGH
+"La página de pago carga un script de un dominio que no reconocemos.",SECURITY,HIGH
+"Encontré una falla de inyección de comandos en el módulo de reportes.",SECURITY,HIGH
+"Un técnico externo instaló un programa de control remoto sin avisar a nadie.",SECURITY,HIGH
+"Alguien está suplantando al director en correos para pedir transferencias urgentes.",SECURITY,HIGH
+"Los registros muestran que se copiaron gigas de información a un servidor externo de madrugada.",SECURITY,CRITICAL
+"Creo que hackearon la página de Facebook de la empresa.",SECURITY,HIGH
+"Los respaldos no están cifrados y se guardan en una computadora personal.",SECURITY,HIGH
+"Un cliente nos avisó que el formulario envía sus datos sin HTTPS.",SECURITY,HIGH
+"Tal vez no sea nada, pero hay un programa desconocido que se ejecuta al encender mi equipo.",SECURITY,HIGH
+"El correo de finanzas reenvía automáticamente todos los mensajes a una dirección externa.",SECURITY,CRITICAL
+"Un compañero tiene anotadas las contraseñas de los servidores en un papel pegado al monitor.",SECURITY,HIGH
+"Las impresoras de red tienen una vulnerabilidad que permite ejecutar código de forma remota.",SECURITY,HIGH
+"Recibimos una alerta de que una cuenta de administrador inició sesión desde una IP en otro continente.",SECURITY,HIGH

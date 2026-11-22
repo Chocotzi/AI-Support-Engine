@@ -7,6 +7,7 @@ import { MODES } from './contract.js';
 import { analyze } from './service.js';
 import { ProviderError } from './providers.js';
 import { GenerativeFormatError } from './generative.js';
+import { MLModelError } from './ml.js';
 
 export const MAX_BODY_BYTES = 10 * 1024;
 export const MAX_MESSAGE_LEN = 2000;
@@ -91,6 +92,7 @@ function toHttpError(err) {
   if (err instanceof GenerativeFormatError) {
     return new HttpError(502, 'INVALID_MODEL_OUTPUT', 'El modelo no devolvió una respuesta con el formato esperado');
   }
+  if (err instanceof MLModelError) return new HttpError(503, 'ML_MODEL_NOT_AVAILABLE', 'El modelo de ML no está disponible');
   return new HttpError(500, 'INTERNAL_ERROR', 'Error interno del servidor');
 }
 
