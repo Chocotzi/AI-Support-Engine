@@ -3,6 +3,7 @@
 
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { appInfo, createMetrics } from './metrics.js';
 import { MODES } from './contract.js';
 import { analyze } from './service.js';
 import { ProviderError } from './providers.js';
@@ -94,15 +95,24 @@ function toHttpError(err) {
   return new HttpError(500, 'INTERNAL_ERROR', 'Error interno del servidor');
 }
 
-export function createServer({ analyzeFn = analyze, log = console.log } = {}) {
+// Rutas de monitoreo: no se cuentan en las métricas ni se registran en el log
+// (Render consulta /health cada pocos segundos y taparía el tráfico real).
+const MONITORING_PATHS = new Set(['/health', '/metrics']);
+
+export function createServer({ analyzeFn = analyze, log = console.log, metrics = createMetrics() } = {}) {
   return http.createServer(async (req, res) => {
-    const started = Date.now();
+    const started = performance.now();
     let info = {};
+    let monitoring = false;
     try {
       const url = new URL(req.url, 'http://localhost');
+      monitoring = MONITORING_PATHS.has(url.pathname) && req.method === 'GET';
 
       if (url.pathname === '/health' && req.method === 'GET') {
-        return send(res, 200, { status: 'ok' });
+        return send(res, 200, { status: 'ok', ...appInfo(), uptimeSeconds: metrics.uptimeSeconds() });
+      }
+      if (url.pathname === '/metrics' && req.method === 'GET') {
+        return send(res, 200, metrics.snapshot());
       }
       if (url.pathname !== '/api/analyze') throw new HttpError(404, 'NOT_FOUND', 'Ruta no encontrada');
       if (req.method !== 'POST') {
@@ -131,8 +141,12 @@ export function createServer({ analyzeFn = analyze, log = console.log } = {}) {
       info = { ...info, error: httpErr.code };
       send(res, httpErr.status, { error: { code: httpErr.code, message: httpErr.message } });
     } finally {
-      // Se registra metadata, NUNCA el contenido del mensaje (puede traer datos personales).
-      log(JSON.stringify({ t: new Date().toISOString(), ms: Date.now() - started, ...info }));
+      if (!monitoring) {
+        const ms = Math.round((performance.now() - started) * 100) / 100;
+        metrics.record({ status: res.statusCode, ms, mode: info.mode });
+        // Se registra metadata, NUNCA el contenido del mensaje (puede traer datos personales).
+        log(JSON.stringify({ t: new Date().toISOString(), ms, status: res.statusCode, ...info }));
+      }
     }
   });
 }

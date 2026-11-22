@@ -43,6 +43,26 @@ npm start                # http://127.0.0.1:3000
 
 Las llaves solo viven en `.env` (ignorado por git). Nunca se registran ni aparecen en errores.
 
+## Liberación y despliegue continuo (CI/CD)
+
+GitHub Actions prueba cada cambio, lo empaqueta en una imagen Docker y lo despliega en Render: primero en staging y, con aprobación manual, en producción. Configuración, niveles de servicio y solución de problemas: [`docs/CI_CD.md`](docs/CI_CD.md).
+
+```
+PR      → pruebas → imagen Docker + pruebas de humo
+main    → pruebas → imagen → staging → aprobación → producción
+cada h  → monitor de producción
+```
+
+| Script | Para qué |
+|---|---|
+| `.github/workflows/pipeline.yml` | El pipeline completo |
+| `Dockerfile`, `render.yaml`, `scripts/release-env.ps1` | Generan el entorno de liberación (en CI, en Render y en su PC) |
+| `npm run smoke -- <url>` | Pruebas de humo contra un entorno levantado |
+| `npm run deploy` | Despliega un commit exacto vía deploy hook (lo usa el pipeline) |
+| `npm run monitor -- <url>` | Disponibilidad, latencia y errores contra los niveles de servicio |
+
+`GET /health` incluye `version` (commit desplegado), `environment` y `uptimeSeconds`. `GET /metrics` devuelve peticiones, errores y latencia p50/p95 por motor desde el último arranque. Nunca incluye el contenido de los mensajes.
+
 ## API
 
 ```bash

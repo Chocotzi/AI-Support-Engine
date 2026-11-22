@@ -1,0 +1,162 @@
+# FLUJO DE TRABAJO (pipeline) DE LIBERACIÓN Y DESPLIEGUE CONTINUO — AI Support Engine
+#
+#   PR contra main     →  1. Pruebas  →  2. Entorno de liberación (Docker)
+#   push a main        →  1 → 2 → 3. Staging → 4. Producción (espera aprobación manual)
+#   Run workflow       →  igual que push a main; con "ref" despliega un commit anterior
+#                         (reversión / rollback)
+#
+# Herramientas: GitHub Actions (orquesta) + Docker (entorno) + Render (despliegue).
+# Configuración de una sola vez (docs/CI_CD.md):
+#   Variables del repo:          STAGING_URL, PRODUCTION_URL
+#   Environment "staging":       secreto RENDER_DEPLOY_HOOK
+#   Environment "production":    secreto RENDER_DEPLOY_HOOK + Required reviewers
+name: Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Commit (SHA) a desplegar. Vacío = el último de main. Sirve para revertir a una versión anterior.
+        required: false
+        default: ""
+
+# Solo lectura: ningún job escribe en el repo.
+permissions:
+  contents: read
+
+# En un PR, un push nuevo cancela la corrida vieja. En main nunca se cancela una
+# corrida a medias (podría dejar un despliegue sin verificar).
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "24"
+  # Commit que se prueba y se despliega: el de "ref" si se pidió uno, si no el actual.
+  TARGET_SHA: ${{ inputs.ref || github.sha }}
+
+# Las Actions van fijadas por SHA de commit (un tag se puede mover; un SHA no).
+jobs:
+  pruebas:
+    name: 1 · Pruebas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }} # vacío = el commit del evento
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # Unitarias, de contrato y de la API HTTP (node:test, sin dependencias).
+      - name: Pruebas unitarias y de API
+        run: npm test
+
+  imagen:
+    name: 2 · Entorno de liberación (Docker)
+    needs: pruebas
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ inputs.ref }} # vacío = el commit del evento
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Construir la imagen (mismo Dockerfile que usa Render)
+        run: docker build --build-arg "APP_VERSION=$TARGET_SHA" -t "ai-support-engine:$TARGET_SHA" .
+
+      - name: Tamaño de la imagen
+        run: docker image ls ai-support-engine --format '{{.Repository}}:{{.Tag}} → {{.Size}}'
+
+      # Mismas variables que render.yaml (sin llave de Gemini).
+      - name: Levantar el contenedor
+        run: |
+          docker run -d --name app -p 3000:10000 \
+            -e APP_ENV=ci -e LLM_PROVIDER=gemini -e LLM_TIMEOUT_MS=30000 \
+            "ai-support-engine:$TARGET_SHA"
+
+      - name: Pruebas de humo contra el contenedor
+        run: node scripts/smoke-test.mjs http://127.0.0.1:3000 --expect-version "$TARGET_SHA"
+
+      - name: Logs del contenedor
+        if: always()
+        run: docker logs app
+
+  staging:
+    name: 3 · Staging (Render)
+    needs: imagen
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    environment:
+      name: staging
+      url: ${{ vars.STAGING_URL }}
+    concurrency:
+      group: deploy-staging
+      cancel-in-progress: false
+    env:
+      APP_URL: ${{ vars.STAGING_URL }}
+    steps:
+      # Los scripts salen del commit actual de main (también al revertir a uno anterior).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Desplegar en Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          DEPLOY_SHA: ${{ env.TARGET_SHA }}
+          DEPLOY_ENV: staging
+        run: node scripts/deploy.mjs
+
+      - name: Pruebas de humo en staging
+        run: node scripts/smoke-test.mjs "$APP_URL" --expect-version "$TARGET_SHA"
+
+  produccion:
+    name: 4 · Producción (Render, con aprobación)
+    needs: staging
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    # "Required reviewers" en este environment detiene el job hasta que alguien aprueba.
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      APP_URL: ${{ vars.PRODUCTION_URL }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Desplegar en Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+          DEPLOY_SHA: ${{ env.TARGET_SHA }}
+          DEPLOY_ENV: production
+        run: node scripts/deploy.mjs
+
+      - name: Pruebas de humo en producción
+        run: node scripts/smoke-test.mjs "$APP_URL" --expect-version "$TARGET_SHA"

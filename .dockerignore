@@ -1,0 +1,7 @@
+# Lista blanca: la imagen lleva SOLO lo que el servidor usa en producción.
+# Todo lo demás (pruebas, eval, results, docs, .env, .git, ml/.venv...) queda fuera.
+*
+!package.json
+!src/
+# Modelo exportado del motor ml (si la rama lo incluye); el entrenamiento no se copia.
+!ml/model.json

@@ -1,0 +1,36 @@
+# MONITOREO — revisa producción cada hora contra los niveles de servicio
+# (scripts/monitor.mjs). Si el job queda en rojo, GitHub avisa por correo: esa es la alerta.
+#
+# Cada corrida despierta el servicio del plan gratis de Render (se apaga tras 15 min sin
+# tráfico), así que "primera respuesta" mide el arranque en frío. Una revisión por hora
+# usa alrededor de 200 de las 750 horas gratis del mes.
+name: Monitor
+
+on:
+  schedule:
+    - cron: "17 * * * *" # minuto 17 de cada hora (GitHub puede retrasarlo unos minutos)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  produccion:
+    name: Monitoreo de producción
+    # Sin la variable configurada todavía, no corre (no deja el job en rojo).
+    if: vars.PRODUCTION_URL != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "24"
+
+      - name: Revisar producción
+        env:
+          APP_URL: ${{ vars.PRODUCTION_URL }}
+        run: node scripts/monitor.mjs "$APP_URL"
