@@ -1,0 +1,48 @@
+# GENERACIÓN DEL ENTORNO DE LIBERACIÓN EN RENDER (Blueprint / infraestructura como código).
+#
+# Crea los dos entornos desde este repositorio: Render > New > Blueprint > este repo.
+# Ver los pasos completos en docs/CI_CD.md.
+#
+# Render NO despliega solo (autoDeployTrigger: off). Los despliegues los dispara el
+# pipeline de GitHub Actions con el deploy hook de cada servicio y el commit exacto
+# que ya pasó las pruebas: primero staging, luego (con aprobación manual) producción.
+#
+# Sin llave de Gemini (decisión del proyecto): el motor generative responde 503
+# PROVIDER_NOT_CONFIGURED de forma controlada; traditional funciona completo.
+
+services:
+  - type: web
+    name: ai-support-engine-staging
+    runtime: docker
+    plan: free
+    region: virginia
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: APP_ENV
+        value: staging
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_TIMEOUT_MS
+        value: "30000"
+
+  - type: web
+    name: ai-support-engine-production
+    runtime: docker
+    plan: free
+    region: virginia
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: LLM_TIMEOUT_MS
+        value: "30000"
