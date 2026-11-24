@@ -84,3 +84,27 @@ test('errores del proveedor -> códigos seguros sin detalles internos', async ()
   }
   nextError = null;
 });
+
+test('GET /health informa versión, entorno y tiempo activo', async () => {
+  const res = await fetch(`${base}/health`);
+  assert.equal(res.status, 200);
+  const j = await res.json();
+  assert.equal(j.status, 'ok');
+  assert.equal(typeof j.version, 'string');
+  assert.equal(typeof j.environment, 'string');
+  assert.equal(typeof j.uptimeSeconds, 'number');
+});
+
+test('GET /metrics cuenta /api/analyze por motor y no cuenta /health', async () => {
+  const before = await (await fetch(`${base}/metrics`)).json();
+  await post({ message: 'No puedo iniciar sesión', mode: 'traditional' });
+  await post({ mode: 'traditional' }); // 400: se cuenta, pero sin motor
+  await fetch(`${base}/health`);
+  const after = await (await fetch(`${base}/metrics`)).json();
+  assert.equal(after.requests.total, before.requests.total + 2);
+  assert.equal(after.requests['2xx'], before.requests['2xx'] + 1);
+  assert.equal(after.requests['4xx'], before.requests['4xx'] + 1);
+  assert.equal(after.engines.traditional.requests, (before.engines.traditional?.requests ?? 0) + 1);
+  assert.equal(typeof after.engines.traditional.p95Ms, 'number');
+  assert.ok(!JSON.stringify(after).includes('iniciar sesión'), 'las métricas no guardan mensajes');
+});
