@@ -2,34 +2,52 @@
 
 ## [HECHO] Tercer motor: `ml` (TF-IDF + regresión logística)
 
-**Registrado:** 2026-11-18 · **Estado:** implementado el 2026-11-19 en la rama `feat/ml` (sin commit todavía) · **Pendiente del equipo:** agregar tickets propios al CSV y escribir la conclusión técnica
+**Registrado:** 2026-11-18 · **Estado:** implementado el 2026-11-19 en `feat/ml`; la parte de evaluación (matriz de confusión y score de un mensaje nuevo) se agregó el 2026-11-23 en `feat/ml-tfidf` · **Pendiente del equipo:** agregar tickets propios al CSV y escribir la conclusión técnica
 
 Agregar un tercer modo, `mode: "ml"`, que clasifique con aprendizaje automático clásico (scikit-learn) y cumpla el mismo contrato que `traditional` y `generative`. Es extra: el enunciado solo exige los otros dos modos, y estos siguen funcionando igual.
 
 ### Código base propuesto
 
+Hay que **adaptarlo**, no copiarlo tal cual: las adaptaciones y su motivo están en el README (sección "Motor `ml`").
+
+Entrenamiento (`pip install pandas scikit-learn`):
+
 ```python
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report
 
 data = pd.read_csv("tickets.csv")
-
 X_train, X_test, y_train, y_test = train_test_split(
-    data["message"], data["category"],
-    test_size=0.2, stratify=data["category"], random_state=42,
+    data["message"], data["category"], test_size=0.2,
+    stratify=data["category"], random_state=42
 )
-
 model = Pipeline([
-    ("vectorizer", TfidfVectorizer(ngram_range=(1, 2))),
-    ("classifier", LogisticRegression(max_iter=1000)),
+    ("tfidf", TfidfVectorizer(ngram_range=(1, 2))),
+    ("classifier", LogisticRegression(max_iter=1000))
 ])
 model.fit(X_train, y_train)
-print(classification_report(y_test, model.predict(X_test)))
-print(model.predict(["Alguien entró a mi cuenta sin autorización"]))
+```
+
+Evaluación y un mensaje nuevo:
+
+```python
+from sklearn.metrics import classification_report, confusion_matrix
+
+predictions = model.predict(X_test)
+print(classification_report(y_test, predictions, zero_division=0))
+print(confusion_matrix(
+    y_test, predictions, labels=model.classes_
+))
+
+new_message = ["Encontré datos de otros clientes"]
+category = model.predict(new_message)[0]
+confidence = model.predict_proba(new_message).max()
+
+print("Categoría:", category)
+print("Score aproximado:", round(confidence, 3))
 ```
 
 ### Lo que hay que resolver antes de integrarlo
@@ -93,6 +111,12 @@ POST /api/analyze {mode:"ml"} ─► service.js ─► src/ml.js  (TF-IDF + soft
 - [x] **7. Ejecutar y documentar:**
   - Correr `pip install`, `npm run train`, `npm test` y `npm run eval`.
   - README: arquitectura, cómo reentrenar, origen de los datos y tabla con números reales.
+- [x] **8. Evaluación del código base** (2026-11-23, rama `feat/ml-tfidf`):
+  - `classification_report(..., zero_division=0)` y `confusion_matrix(..., labels=model.classes_)` sobre el 20 % separado. La matriz se imprime con nombres y con las confusiones más frecuentes.
+  - "Encontré datos de otros clientes" y las demás frases de paridad se clasifican con el modelo final, con score de 3 decimales.
+  - Toda la salida queda en `results/ml-entrenamiento.md`.
+  - Prueba nueva en `tests/ml.test.js`: esa frase da SECURITY/HIGH con revisión humana.
+- [ ] **9. Tickets del equipo:** agregarlos a `ml/tickets.csv` (README, "Agregar tickets del equipo"), con prioridad en BUG. Después, reentrenar, evaluar y actualizar los números.
 
 ### Criterios de terminado
 

@@ -37,6 +37,16 @@ for (const [msg, cat] of heldOut) {
   test(`generaliza: "${msg}" -> ${cat}`, () => assert.equal(analyzeML(msg).category, cat));
 }
 
+// El ejemplo del código base (ml/train.py). Es una fuga de datos sin las palabras clave del motor
+// tradicional ("fuga", "filtración", "no autorizado"...), que lo clasifica como BUG. El ml la
+// reconoce por las palabras que aprendió de los tickets de seguridad ("datos", "otros clientes").
+test('ejemplo del código base: "Encontré datos de otros clientes" -> SECURITY con revisión humana', () => {
+  const r = analyzeML('Encontré datos de otros clientes');
+  assert.equal(r.category, 'SECURITY');
+  assert.equal(r.priority, 'HIGH');
+  assert.equal(r.requiresHumanReview, true);
+});
+
 test('SECURITY siempre requiere revisión humana', () => {
   const r = analyzeML('Un ransomware cifró los archivos de contabilidad');
   assert.equal(r.category, 'SECURITY');

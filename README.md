@@ -118,6 +118,21 @@ POST /api/analyze {mode:"ml"} ─► service.js ─► src/ml.js (TF-IDF + softm
 3. **Prioridad y respuesta:** usan las mismas reglas del tradicional (`pickPriority` y `buildResponse`). Con 240 ejemplos, un modelo de prioridad sería débil. Por eso la comparación mide solo qué motor clasifica mejor la categoría.
 4. **Revisión humana:** se marca si la categoría es SECURITY, la prioridad es CRITICAL, hubo intento de manipulación o la probabilidad de la categoría ganadora es menor a 0.5.
 
+**Qué se adaptó del código base** (en [`docs/BACKLOG.md`](docs/BACKLOG.md): entrenamiento con `train_test_split` + `TfidfVectorizer` + `LogisticRegression`; evaluación con `classification_report`, `confusion_matrix` y `predict_proba` de un mensaje nuevo):
+
+| Código base | En `ml/train.py` | Por qué |
+|---|---|---|
+| `pd.read_csv("tickets.csv")` | Valida columnas, categorías, celdas vacías y duplicados. Se detiene si un caso de la evaluación está copiado | Un CSV mal escrito o con casos de la evaluación daría métricas falsas |
+| El texto va directo a `TfidfVectorizer` | Antes pasa por `normalize` + `stripInjection` (el mismo código de Node), con `lowercase=False` | El modelo entrena con el texto que verá en producción y las órdenes de inyección no cuentan como palabras |
+| `LogisticRegression(max_iter=1000)` con `C=1` | Mismo `max_iter` (converge en unas 20 iteraciones); `C` elegido por validación cruzada, salió 300 | Con `C=1` el 96 % de las predicciones quedaba bajo 0.5 y casi todo iría a revisión humana |
+| `classification_report(..., zero_division=0)` | Igual, con 3 decimales, y además validación cruzada de 5 particiones | 48 tickets de prueba son pocos: la validación cruzada da una cifra más estable |
+| `confusion_matrix(..., labels=model.classes_)` | Matriz con nombres de fila y columna, más las 3 confusiones más frecuentes en palabras | Se ve **qué** categoría se confunde con cuál, no solo cuánto falla |
+| `predict` y `predict_proba` de "Encontré datos de otros clientes" | Esa frase y 8 más, con el modelo final, score con 3 decimales y aviso de baja confianza | Es el mismo modelo y el mismo score que devuelve la API |
+| Termina en `model.fit` | Reentrena con el 100 %, exporta `ml/model.json` y guarda la salida en [`results/ml-entrenamiento.md`](results/ml-entrenamiento.md) | Node predice sin Python, y el reporte queda como evidencia |
+| Solo da la categoría | `src/ml.js` completa prioridad, respuesta y revisión humana | El contrato pide los cinco campos |
+
+Ejemplo del código base: "Encontré datos de otros clientes" → `ml` da SECURITY (score 0.959) y pide revisión humana. El `traditional` la clasifica como BUG, porque no trae ninguna de sus palabras clave de seguridad.
+
 **Datos de entrenamiento** ([`ml/tickets.csv`](ml/tickets.csv)): 240 tickets sintéticos, 60 por categoría, generados con IA (Claude). La mayoría está en español y algunos en inglés.
 
 - No se usaron los casos de `eval/dataset.json` y se evitó parafrasearlos.
@@ -131,11 +146,22 @@ Para reentrenar (por ejemplo, después de agregar tickets al CSV):
 python -m venv ml/.venv
 ml/.venv/Scripts/python -m pip install -r ml/requirements.txt   # Windows
 # ml/.venv/bin/python -m pip install -r ml/requirements.txt     # macOS / Linux
-npm run train    # imprime classification_report y validación cruzada; reescribe ml/model.json
+npm run train    # reporte, matriz de confusión, validación cruzada y frases de ejemplo;
+                 # reescribe ml/model.json y results/ml-entrenamiento.md
 npm test         # incluye la prueba de paridad Python <-> JS
 ```
 
-`ml/model.json` se sube al repositorio. Si falta, `mode:"ml"` responde 503 `ML_MODEL_NOT_AVAILABLE`.
+`ml/model.json` y `results/ml-entrenamiento.md` se suben al repositorio. Si los tickets no cambian, reentrenar los deja idénticos. Si falta `ml/model.json`, `mode:"ml"` responde 503 `ML_MODEL_NOT_AVAILABLE`.
+
+### Agregar tickets del equipo
+
+1. Agregue filas a [`ml/tickets.csv`](ml/tickets.csv) (UTF-8): `"mensaje",CATEGORIA,PRIORIDAD`, con el mensaje entre comillas. La categoría es una de `ACCESS`, `BUG`, `FEATURE` o `SECURITY`.
+2. No copie ni parafrasee los casos de `eval/dataset.json`: `train.py` se detiene si un ticket se parece demasiado a uno (similitud ≥ 0.6).
+3. Dónde sumar más, según la matriz de confusión actual:
+   - **BUG** es la categoría más débil: 6 de los 12 BUG de prueba salieron SECURITY.
+   - En inglés: "The dashboard shows wrong totals after the update" sale ACCESS.
+4. `npm run train`, `npm test` y `npm run eval`. Si falla una prueba de "generaliza", el modelo empeoró en ese caso: revise los tickets nuevos antes de tocar la prueba.
+5. Actualice los números de este README (cantidad de tickets, 62.5 % / 71 % y la tabla de resultados) y el origen de los datos.
 
 ## Pruebas comparativas
 
@@ -176,6 +202,7 @@ Fallos del ml:
 > ⚠️ Cómo leer el 90 % del ml:
 > - Sale de solo 20 casos: cada acierto o fallo mueve el resultado 5 puntos.
 > - Con tickets del CSV que el modelo no vio, la exactitud fue menor: 62.5 % con el 20 % separado y 71 % con validación cruzada. Es de esperar que rinda por debajo del 90 % con mensajes nuevos.
+> - La matriz de confusión ([`results/ml-entrenamiento.md`](results/ml-entrenamiento.md)) muestra que el error principal es BUG → SECURITY: 6 de 12. Ese error manda a revisión humana tickets que no la necesitaban. El que importa más es el contrario: 3 de los 12 SECURITY de prueba salieron como otra categoría.
 > - Quien generó los datos de entrenamiento conocía la evaluación (ver [Motor `ml`](#motor-ml-extra)).
 > - No se ajustó nada después de ver estos resultados. `C` se eligió antes, con validación cruzada sobre el CSV.
 

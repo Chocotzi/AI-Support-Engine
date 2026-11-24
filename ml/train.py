@@ -10,8 +10,11 @@ Pasos:
   2. Preprocesa con el MISMO código de producción (normalize + stripInjection, vía Node).
   3. Falla si algún caso de eval/dataset.json aparece (o casi) en los datos de entrenamiento.
   4. Elige la regularización C por validación cruzada (solo con el CSV).
-  5. Mide el modelo con un 20 % separado y con validación cruzada (código base del backlog).
-  6. Reentrena con el 100 % de los tickets y exporta los parámetros + muestras de paridad.
+  5. Mide el modelo con un 20 % separado: reporte por categoría y matriz de confusión (código
+     base del backlog, adaptado). Después, con validación cruzada.
+  6. Reentrena con el 100 % de los tickets y clasifica frases nuevas de ejemplo (categoría y score).
+  7. Exporta los parámetros + muestras de paridad y guarda todo lo impreso en
+     results/ml-entrenamiento.md (evidencia del entrenamiento).
 """
 
 import json
@@ -25,7 +28,7 @@ import pandas as pd
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report
+from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.model_selection import StratifiedKFold, cross_val_score, train_test_split
 from sklearn.pipeline import Pipeline
 
@@ -35,6 +38,7 @@ ROOT = Path(__file__).resolve().parent.parent
 TICKETS = ROOT / "ml" / "tickets.csv"
 EVAL_DATASET = ROOT / "eval" / "dataset.json"
 OUTPUT = ROOT / "ml" / "model.json"
+REPORT = ROOT / "results" / "ml-entrenamiento.md"
 
 CATEGORIES = ["ACCESS", "BUG", "FEATURE", "SECURITY"]
 PRIORITIES = ["LOW", "MEDIUM", "HIGH", "CRITICAL"]
@@ -42,10 +46,14 @@ TOKEN_PATTERN = r"(?u)\b\w\w+\b"  # el de scikit-learn por defecto; src/ml.js us
 MAX_SIMILARITY = 0.6  # similitud (Jaccard de palabras) a partir de la cual un ticket "copia" un caso de evaluación
 C_GRID = [1, 3, 10, 30, 100, 300]  # valores de regularización que se prueban (1 es el de scikit-learn)
 FOLDS = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+MIN_CONFIDENCE = 0.5  # el mismo umbral de src/ml.js: con menos probabilidad se pide revisión humana
 
-# Frases que NO están en el CSV ni en la evaluación. tests/ml.test.js comprueba que Node obtiene
-# para ellas las mismas probabilidades que scikit-learn (prueba de paridad Python <-> JS).
+# Frases que NO están en el CSV ni en la evaluación. Se usan dos veces:
+#   - al final del entrenamiento, para mostrar qué categoría y score les da el modelo final;
+#   - en tests/ml.test.js, que comprueba que Node obtiene las mismas probabilidades que
+#     scikit-learn (prueba de paridad Python <-> JS).
 PARITY_SAMPLES = [
+    "Encontré datos de otros clientes",  # el ejemplo del código base: fuga de datos sin decir "fuga"
     "Alguien entró a mi cuenta sin autorización",
     "No me llega el correo para cambiar la contraseña",
     "La aplicación se cierra sola al abrir el calendario",
@@ -55,6 +63,15 @@ PARITY_SAMPLES = [
     "¡¡URGENTE!! nadie puede entrar al sistema de ventas",
     "zzz qwerty asdf",  # ninguna palabra conocida: el vector TF-IDF queda en ceros
 ]
+
+
+REPORT_LINES = []
+
+
+def log(text=""):
+    """Imprime en consola y guarda la línea para results/ml-entrenamiento.md."""
+    print(text)
+    REPORT_LINES.append(str(text))
 
 
 def fail(message):
@@ -85,7 +102,7 @@ def make_model(C=1.0):
     # (y así Python y JS no dependen de dos implementaciones distintas de "minúsculas").
     return Pipeline([
         ("vectorizer", TfidfVectorizer(ngram_range=(1, 2), lowercase=False, token_pattern=TOKEN_PATTERN)),
-        ("classifier", LogisticRegression(C=C, max_iter=5000)),
+        ("classifier", LogisticRegression(C=C, max_iter=1000)),  # converge en unas 20 iteraciones
     ])
 
 
@@ -127,12 +144,39 @@ def check_no_eval_leak(train_texts, eval_cases):
         exact = text in train_texts
         worst.append((1.0 if exact else sims[j], case["id"], j))
     worst.sort(reverse=True)
-    print("Revisión de coincidencias con eval/dataset.json (similitud de palabras, 1.0 = idéntico):")
+    log("Revisión de coincidencias con eval/dataset.json (similitud de palabras, 1.0 = idéntico):")
     for sim, case_id, j in worst[:3]:
-        print(f"  caso #{case_id}: {sim:.2f} con el ticket de la fila {j + 2}")
+        log(f"  caso #{case_id}: {sim:.2f} con el ticket de la fila {j + 2}")
     leaks = [(case_id, j) for sim, case_id, j in worst if sim >= MAX_SIMILARITY]
     if leaks:
         fail(f"casos de evaluación copiados en {TICKETS.name} (caso, fila): {[(c, j + 2) for c, j in leaks]}")
+
+
+def show_confusion(y_true, y_pred, classes):
+    """Matriz de confusión con nombres (filas = categoría real, columnas = la que predijo el
+    modelo) y, en palabras, las confusiones que más se repiten: así se ve QUÉ falla, no solo cuánto."""
+    matrix = confusion_matrix(y_true, y_pred, labels=classes)
+    table = pd.DataFrame(matrix, index=[f"real {c}" for c in classes], columns=[f"pred {c}" for c in classes])
+    log("Matriz de confusión (filas = categoría real, columnas = la que predijo el modelo):")
+    log(table.to_string())
+    errors = sorted(
+        ((int(matrix[i, j]), real, pred)
+         for i, real in enumerate(classes) for j, pred in enumerate(classes)
+         if i != j and matrix[i, j]),
+        key=lambda e: -e[0],
+    )
+    if errors:
+        log("Confusiones más frecuentes: " + ", ".join(f"{real} -> {pred} ({n})" for n, real, pred in errors[:3]))
+
+
+def show_examples(model):
+    """Clasifica frases nuevas con el modelo FINAL, que es el que servirá src/ml.js. Pasan por
+    el mismo preprocess() que en producción, así que el score coincide con el de la API."""
+    log(f"\nFrases nuevas con el modelo final (score = probabilidad de la categoría elegida;"
+        f" menor a {MIN_CONFIDENCE} pide revisión humana):")
+    for text, p in zip(PARITY_SAMPLES, model.predict_proba(preprocess(PARITY_SAMPLES))):
+        low = "  <- baja confianza" if p.max() < MIN_CONFIDENCE else ""
+        log(f'  {model.classes_[p.argmax()]:<8} {p.max():.3f}  "{text}"{low}')
 
 
 def export(model, n_tickets):
@@ -165,7 +209,19 @@ def export(model, n_tickets):
     # Un campo por línea: los diffs de git muestran qué parte cambió al reentrenar.
     body = ",\n".join(f"{json.dumps(k)}: {json.dumps(v, ensure_ascii=False)}" for k, v in params.items())
     OUTPUT.write_text("{\n" + body + "\n}\n", encoding="utf-8")
-    print(f"\nGuardado {OUTPUT.relative_to(ROOT)}: {len(params['vocabulary'])} términos, {len(CATEGORIES)} clases.")
+    log(f"\nGuardado {OUTPUT.relative_to(ROOT).as_posix()}: {len(params['vocabulary'])} términos, {len(CATEGORIES)} clases.")
+
+
+def write_report():
+    # Sin fecha: si se reentrena con los mismos tickets, el archivo sale idéntico y git no marca cambios.
+    body = "\n".join(REPORT_LINES).strip("\n")
+    REPORT.write_text(
+        "# Entrenamiento del motor ml\n\n"
+        "Salida de `npm run train` (ml/train.py). Se regenera en cada entrenamiento; no editar a mano.\n\n"
+        f"```text\n{body}\n```\n",
+        encoding="utf-8",
+    )
+    print(f"Guardado {REPORT.relative_to(ROOT).as_posix()}")
 
 
 def main():
@@ -174,8 +230,8 @@ def main():
     if len(set(texts)) != len(texts):
         fail(f"{TICKETS.name} tiene mensajes repetidos")
     labels = data["category"]
-    print(f"{len(data)} tickets por categoría: {labels.value_counts().sort_index().to_dict()}")
-    print(f"Prioridades (solo informativas; el motor usa pickPriority): {data['priority'].value_counts().to_dict()}\n")
+    log(f"{len(data)} tickets por categoría: {labels.value_counts().sort_index().to_dict()}")
+    log(f"Prioridades (solo informativas; el motor usa pickPriority): {data['priority'].value_counts().to_dict()}\n")
 
     check_no_eval_leak(texts, json.loads(EVAL_DATASET.read_text(encoding="utf-8")))
 
@@ -185,20 +241,22 @@ def main():
     )
     split_C, _ = choose_C(X_train, y_train)
     model = make_model(split_C).fit(X_train, y_train)
-    print(f"\nValidación con el 20 % separado ({len(X_test)} tickets que el modelo no vio al entrenar, C={split_C}):")
-    print(classification_report(y_test, model.predict(X_test), digits=3))
+    predictions = model.predict(X_test)
+    log(f"\nValidación con el 20 % separado ({len(X_test)} tickets que el modelo no vio al entrenar, C={split_C}):")
+    # zero_division=0: si una categoría no recibe ninguna predicción, su precisión vale 0 sin advertencias.
+    log(classification_report(y_test, predictions, digits=3, zero_division=0))
+    show_confusion(y_test, predictions, model.classes_)
 
     # Modelo final: C elegido y entrenamiento con todos los tickets (el 20 % ya cumplió su función).
     best_C, losses = choose_C(texts, labels)
-    print("Log-loss en validación cruzada por C: " + ", ".join(f"{C}={loss:.3f}" for C, loss in losses.items()))
+    log("\nLog-loss en validación cruzada por C: " + ", ".join(f"{C}={loss:.3f}" for C, loss in losses.items()))
     cv = cross_val_score(make_model(best_C), texts, labels, cv=FOLDS)
-    print(f"C elegido: {best_C}. Exactitud en validación cruzada (5 particiones): {cv.mean():.3f} +/- {cv.std():.3f}")
+    log(f"C elegido: {best_C}. Exactitud en validación cruzada (5 particiones): {cv.mean():.3f} +/- {cv.std():.3f}")
     model = make_model(best_C).fit(texts, labels)
-    example = PARITY_SAMPLES[0]
-    proba = model.predict_proba(preprocess([example]))[0]
-    print(f'Ejemplo: "{example}" -> {model.classes_[proba.argmax()]} ({proba.max():.2f})')
+    show_examples(model)
 
     export(model, len(data))
+    write_report()
 
 
 if __name__ == "__main__":
